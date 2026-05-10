@@ -2,6 +2,20 @@
 
 Write raw TypeScript types directly in PHP attributes and generate `.ts` files with a single Artisan command.
 
+## Laravel Boost
+
+This package ships a [Laravel Boost](https://laravel.com/docs/boost) skill. If you use Boost, run:
+
+```bash
+php artisan boost:install
+```
+
+and select `brunoscode/laravel-ts-annotations` when prompted. The skill teaches your AI agent how to use `#[TS]` attributes, run `ts:generate`, and manage the generated output.
+
+---
+
+## Quick start
+
 Place the attribute on a class or on individual methods — whichever keeps your code cleaner:
 
 ```php
@@ -114,7 +128,7 @@ return [
         'default' => [
             'path'    => resource_path('js/types/generated.ts'),
             'imports' => [
-                "import type { PageProps } from '@inertiajs/core'",
+                // "import type { PageProps } from '@inertiajs/core'",
                 // add any imports that must always appear in this file
             ],
         ],

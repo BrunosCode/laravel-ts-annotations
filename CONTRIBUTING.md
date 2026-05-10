@@ -207,6 +207,5 @@ La CI esegue i test su tutte le combinazioni supportate di PHP e Laravel. Tutte 
 
 Queste sono le aree dove i contributi sono particolarmente benvenuti:
 
-- **Dedent automatico** — logica tipo `textwrap.dedent` nel `TypeScriptFileWriter` per normalizzare l'indentazione del body indipendentemente da come è scritto il nowdoc.
 - **`--watch` flag** — rigenerazione automatica all'aggiornamento di un file PHP.
 - **Modalità ibrida** — inferire i tipi TypeScript dalle property PHP con possibilità di override tramite `#[TSProp('tipo')]`, senza richiedere il body completo nell'attributo.
