@@ -3,6 +3,7 @@
 namespace Brunoscode\LaravelTsAnnotations\Tests\Unit;
 
 use Brunoscode\LaravelTsAnnotations\Parser\AttributeParser;
+use Brunoscode\LaravelTsAnnotations\Tests\Fixtures\AdminStatusEnum;
 use Brunoscode\LaravelTsAnnotations\Tests\Fixtures\DirectionEnum;
 use Brunoscode\LaravelTsAnnotations\Tests\Fixtures\PriorityEnum;
 use Brunoscode\LaravelTsAnnotations\Tests\Fixtures\StatusEnum;
@@ -102,6 +103,17 @@ class EnumParserTest extends TestCase
         $result = $this->parser->parse([StatusEnum::class]);
 
         $this->assertArrayHasKey('default', $result);
+    }
+
+    // ── Custom output key routing ─────────────────────────────────────────────
+
+    public function test_custom_output_key_routes_to_correct_group(): void
+    {
+        $result = $this->parser->parse([AdminStatusEnum::class]);
+
+        $this->assertArrayHasKey('admin', $result);
+        $this->assertArrayNotHasKey('default', $result);
+        $this->assertStringContainsString('export enum AdminStatusEnum', $result['admin'][0]['body']);
     }
 
     // ── No interference with plain classes ────────────────────────────────────

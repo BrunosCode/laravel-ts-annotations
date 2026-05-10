@@ -178,4 +178,57 @@ class WriterTest extends TestCase
         $this->assertStringContainsString('export type TypeB', $content);
         $this->assertStringContainsString('export type TypeC', $content);
     }
+
+    // ── Marker edge cases ─────────────────────────────────────────────────────
+
+    public function test_appends_when_only_start_marker_present(): void
+    {
+        file_put_contents($this->tmpFile, "manual\n" . self::START . "\nold content\n");
+
+        $this->makeWriter()->write($this->tmpFile, $this->entries('export type New = {}'), []);
+
+        $content = file_get_contents($this->tmpFile);
+
+        $this->assertStringContainsString('manual', $content);
+        $this->assertStringContainsString('export type New', $content);
+        // Falls to append — original start marker plus the new generated block
+        $this->assertSame(2, substr_count($content, self::START));
+    }
+
+    public function test_appends_when_only_end_marker_present(): void
+    {
+        file_put_contents($this->tmpFile, "manual\nold content\n" . self::END . "\n");
+
+        $this->makeWriter()->write($this->tmpFile, $this->entries('export type New = {}'), []);
+
+        $content = file_get_contents($this->tmpFile);
+
+        $this->assertStringContainsString('manual', $content);
+        $this->assertStringContainsString('export type New', $content);
+        $this->assertStringContainsString(self::START, $content);
+    }
+
+    public function test_appends_when_end_marker_precedes_start_marker(): void
+    {
+        // Reversed markers — condition $endPos > $startPos is false → fall to append
+        file_put_contents($this->tmpFile, self::END . "\nmanual\n" . self::START . "\n");
+
+        $this->makeWriter()->write($this->tmpFile, $this->entries('export type New = {}'), []);
+
+        $content = file_get_contents($this->tmpFile);
+
+        $this->assertStringContainsString('manual', $content);
+        $this->assertStringContainsString('export type New', $content);
+    }
+
+    public function test_empty_entries_produces_valid_block_with_only_markers(): void
+    {
+        $this->makeWriter()->write($this->tmpFile, [], []);
+
+        $content = file_get_contents($this->tmpFile);
+
+        $this->assertStringContainsString(self::START, $content);
+        $this->assertStringContainsString(self::END, $content);
+        $this->assertStringNotContainsString('// ---', $content);
+    }
 }

@@ -2,9 +2,11 @@
 
 namespace Brunoscode\LaravelTsAnnotations\Tests\Unit;
 
+use Brunoscode\LaravelTsAnnotations\Attributes\TSType;
 use Brunoscode\LaravelTsAnnotations\Parser\AttributeParser;
 use Brunoscode\LaravelTsAnnotations\Tests\Fixtures\ProductData;
 use Brunoscode\LaravelTsAnnotations\Tests\Fixtures\UserData;
+use Brunoscode\LaravelTsAnnotations\Tests\Fixtures\UserDataChild;
 use Brunoscode\LaravelTsAnnotations\Tests\TestCase;
 
 class TSTypeParserTest extends TestCase
@@ -140,8 +142,95 @@ class TSTypeParserTest extends TestCase
 
     public function test_custom_name_overrides_class_short_name(): void
     {
-        // Inline anonymous class to test the `name` param without a fixture file
-        $tsTypeAttr = new \Brunoscode\LaravelTsAnnotations\Attributes\TSType(name: 'IUser');
+        $tsTypeAttr = new TSType(name: 'IUser');
         $this->assertSame('IUser', $tsTypeAttr->name);
+    }
+
+    public function test_custom_name_appears_in_generated_body(): void
+    {
+        $obj  = new #[TSType(name: 'IProduct')] class { public int $id; };
+        $fqcn = get_class($obj);
+
+        $result = $this->parser->parse([$fqcn]);
+        $body   = $result['default'][0]['body'];
+
+        $this->assertStringContainsString('export type IProduct = {', $body);
+        $this->assertStringNotContainsString('export type class@', $body);
+    }
+
+    // ── Inherited properties excluded ─────────────────────────────────────────
+
+    public function test_inherited_properties_are_not_included(): void
+    {
+        $result = $this->parser->parse([UserDataChild::class]);
+        $body   = $result['default'][0]['body'];
+
+        // Only the child's own property
+        $this->assertStringContainsString('childOnly: string;', $body);
+
+        // Parent properties must not leak through
+        $this->assertStringNotContainsString('id:', $body);
+        $this->assertStringNotContainsString('name:', $body);
+        $this->assertStringNotContainsString('email:', $body);
+        $this->assertStringNotContainsString('active:', $body);
+    }
+
+    // ── Untyped property ──────────────────────────────────────────────────────
+
+    public function test_untyped_property_maps_to_unknown(): void
+    {
+        $obj  = new #[TSType] class { public $untyped; };
+        $fqcn = get_class($obj);
+
+        $result = $this->parser->parse([$fqcn]);
+        $body   = $result['default'][0]['body'];
+
+        $this->assertStringContainsString('untyped: unknown;', $body);
+    }
+
+    // ── Union type property ───────────────────────────────────────────────────
+
+    public function test_union_type_property_maps_correctly(): void
+    {
+        $obj  = new #[TSType] class { public int|string $value; };
+        $fqcn = get_class($obj);
+
+        $result = $this->parser->parse([$fqcn]);
+        $body   = $result['default'][0]['body'];
+
+        // PHP may reorder union type members — assert both parts present
+        $this->assertStringContainsString('value:', $body);
+        $this->assertStringContainsString('number', $body);
+        $this->assertStringContainsString('string', $body);
+        $this->assertStringContainsString(' | ', $body);
+    }
+
+    // ── Class with no public properties ──────────────────────────────────────
+
+    public function test_class_with_no_properties_produces_empty_type_body(): void
+    {
+        $obj  = new #[TSType] class {};
+        $fqcn = get_class($obj);
+
+        $result = $this->parser->parse([$fqcn]);
+        $body   = $result['default'][0]['body'];
+
+        $this->assertStringContainsString('export type', $body);
+        $this->assertStringContainsString('{', $body);
+        $this->assertStringContainsString('}', $body);
+        $this->assertStringNotContainsString('// ---', $body);
+    }
+
+    // ── Custom output key routing ─────────────────────────────────────────────
+
+    public function test_custom_output_key_routes_correctly(): void
+    {
+        $obj  = new #[TSType(output: 'admin')] class { public int $id; };
+        $fqcn = get_class($obj);
+
+        $result = $this->parser->parse([$fqcn]);
+
+        $this->assertArrayHasKey('admin', $result);
+        $this->assertArrayNotHasKey('default', $result);
     }
 }
