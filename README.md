@@ -1,6 +1,6 @@
 # laravel-ts-annotations
 
-Write raw TypeScript types directly in PHP attributes and generate `.ts` files with a single Artisan command.
+Generate TypeScript types from PHP attributes with a single Artisan command. Three annotation styles — raw TypeScript, auto-inferred from class properties, and auto-inferred from enums — cover every common case.
 
 ## Laravel Boost
 
@@ -10,16 +10,14 @@ This package ships a [Laravel Boost](https://laravel.com/docs/boost) skill. If y
 php artisan boost:install
 ```
 
-and select `brunoscode/laravel-ts-annotations` when prompted. The skill teaches your AI agent how to use `#[TS]` attributes, run `ts:generate`, and manage the generated output.
+and select `brunoscode/laravel-ts-annotations` when prompted. The skill teaches your AI agent how to use `#[TS]`, `#[TSType]`, and `#[TSEnum]` attributes, run `ts:generate`, and manage the generated output.
 
 ---
 
 ## Quick start
 
-Place the attribute on a class or on individual methods — whichever keeps your code cleaner:
-
 ```php
-// On a class (e.g. an API Resource)
+// Raw TypeScript — full control
 #[TS(<<<'TS'
     export type UserResponse = {
         id: number;
@@ -29,23 +27,23 @@ Place the attribute on a class or on individual methods — whichever keeps your
     TS)]
 class UserResource extends JsonResource {}
 
-// On individual controller methods
-class UserController extends Controller
+// Auto-inferred from class properties
+#[TSType]
+class UserData
 {
-    #[TS(<<<'TS'
-        export type UserListResponse = {
-            data: UserResponse[];
-            total: number;
-        }
-        TS)]
-    public function index(): JsonResponse { ... }
+    public function __construct(
+        public readonly int $id,
+        public readonly string $name,
+        public readonly ?string $email,
+    ) {}
+}
 
-    #[TS(<<<'TS'
-        export type UserShowResponse = {
-            data: UserResponse;
-        }
-        TS)]
-    public function show(User $user): JsonResponse { ... }
+// Auto-inferred from PHP enum
+#[TSEnum]
+enum Status: string
+{
+    case Active   = 'active';
+    case Inactive = 'inactive';
 }
 ```
 
@@ -59,8 +57,6 @@ php artisan ts:generate
 // [ts-annotations:start]
 // ⚠️  Auto-generated — do not edit between these comments.
 
-import type { PageProps } from '@inertiajs/core'
-
 // --- App\Http\Resources\UserResource ---
 export type UserResponse = {
     id: number;
@@ -68,15 +64,17 @@ export type UserResponse = {
     role: 'admin' | 'editor' | 'viewer';
 }
 
-// --- App\Http\Controllers\UserController::index() ---
-export type UserListResponse = {
-    data: UserResponse[];
-    total: number;
+// --- App\Data\UserData ---
+export type UserData = {
+    readonly id: number;
+    readonly name: string;
+    readonly email: string | null;
 }
 
-// --- App\Http\Controllers\UserController::show() ---
-export type UserShowResponse = {
-    data: UserResponse;
+// --- App\Enums\Status ---
+export enum Status {
+    Active = 'active',
+    Inactive = 'inactive',
 }
 // [ts-annotations:end]
 ```
@@ -85,7 +83,11 @@ export type UserShowResponse = {
 
 ## Why this package?
 
-Most existing solutions either **infer** TypeScript from PHP types (losing union types, template literals, generics) or go through a Swagger/OpenAPI intermediary (indirect and verbose). This package lets you write **real TypeScript** in PHP attributes — no inference, no intermediate format.
+Most solutions either **infer** TypeScript from PHP types (losing union types, template literals, generics) or go through a Swagger/OpenAPI intermediary (indirect and verbose). This package gives you three levels of control:
+
+- `#[TS]` — write **real TypeScript** verbatim when you need unions, templates, or generics
+- `#[TSType]` — **auto-infer** from PHP property types for simple DTOs and data classes
+- `#[TSEnum]` — **auto-generate** TypeScript enums from PHP backed or unit enums
 
 ---
 
@@ -117,19 +119,19 @@ php artisan vendor:publish --tag=ts-annotations-config
 
 return [
 
-    // Directories scanned recursively for #[TS] attributes.
+    // Directories scanned recursively for all annotation types.
     'scan' => [
         app_path('Http'),       // covers Resources, Controllers, Requests, Middleware
-        // app_path('Data'),    // add more paths as needed
+        app_path('Data'),       // DTOs annotated with #[TSType]
+        app_path('Enums'),      // enums annotated with #[TSEnum]
     ],
 
-    // Output .ts files. The array key is referenced inside #[TS(output: 'key')].
+    // Output .ts files. The array key is referenced in the `output` param.
     'outputs' => [
         'default' => [
             'path'    => resource_path('js/types/generated.ts'),
             'imports' => [
                 // "import type { PageProps } from '@inertiajs/core'",
-                // add any imports that must always appear in this file
             ],
         ],
         // 'admin' => [
@@ -152,9 +154,11 @@ return [
 
 ## Usage
 
-### Annotate a class
+### `#[TS]` — raw TypeScript
 
-Place `#[TS]` above any class in a scanned directory. Useful for API Resources, Form Requests, DTOs, and any class whose shape maps to a single TypeScript type.
+Write any TypeScript verbatim. Use this when you need union types, template literals, generics, or any construct that can't be inferred from PHP types.
+
+Usable on classes and on individual methods. `#[TS]` is repeatable — stack it as many times as needed.
 
 ```php
 use Brunoscode\LaravelTsAnnotations\Attributes\TS;
@@ -163,31 +167,15 @@ use Brunoscode\LaravelTsAnnotations\Attributes\TS;
     export type UserResponse = {
         id: number;
         name: string;
-        email: string;
         role: 'admin' | 'editor' | 'viewer';
     }
     TS)]
-class UserResource extends JsonResource
-{
-    public function toArray(Request $request): array
-    {
-        return [
-            'id'    => $this->id,
-            'name'  => $this->name,
-            'email' => $this->email,
-            'role'  => $this->role,
-        ];
-    }
-}
+class UserResource extends JsonResource {}
 ```
 
-### Annotate controller methods
-
-Place `#[TS]` above individual methods to keep each type next to the action it describes. Types are written in declaration order.
+On controller methods — keeps each type next to the action it describes:
 
 ```php
-use Brunoscode\LaravelTsAnnotations\Attributes\TS;
-
 class UserController extends Controller
 {
     #[TS(<<<'TS'
@@ -197,20 +185,7 @@ class UserController extends Controller
             per_page: number;
         }
         TS)]
-    public function index(): JsonResponse
-    {
-        return response()->json(UserResource::collection(User::paginate()));
-    }
-
-    #[TS(<<<'TS'
-        export type UserShowResponse = {
-            data: UserResponse;
-        }
-        TS)]
-    public function show(User $user): JsonResponse
-    {
-        return response()->json(new UserResource($user));
-    }
+    public function index(): JsonResponse { ... }
 
     #[TS(<<<'TS'
         export type UserStoreResponse = {
@@ -218,46 +193,131 @@ class UserController extends Controller
             message: string;
         }
         TS)]
-    public function store(StoreUserRequest $request): JsonResponse
-    {
-        $user = User::create($request->validated());
-        return response()->json(['data' => new UserResource($user), 'message' => 'Created']);
-    }
+    public function store(StoreUserRequest $request): JsonResponse { ... }
 }
 ```
 
-### Define multiple types on the same class or method
+> **Heredoc indentation:** Place the closing `TS` marker at the same indentation level as the type body. PHP strips that many leading spaces from every line, giving zero-based indentation in the output.
 
-`#[TS]` is repeatable — stack it as many times as needed:
+---
+
+### `#[TSType]` — auto-infer from class properties
+
+Inspects all public non-static properties (including promoted constructor params) via Reflection and maps PHP types to TypeScript. The `readonly` modifier is preserved.
 
 ```php
-#[TS(<<<'TS'
-    export type UserResponse = {
-        id: number;
-        name: string;
-    }
-    TS)]
-#[TS(<<<'TS'
-    export type UserCollection = {
-        data: UserResponse[];
-        total: number;
-        per_page: number;
-    }
-    TS)]
-class UserResource extends JsonResource {}
+use Brunoscode\LaravelTsAnnotations\Attributes\TSType;
+
+#[TSType]
+class OrderData
+{
+    public function __construct(
+        public readonly int $id,
+        public readonly string $reference,
+        public readonly float $total,
+        public readonly bool $paid,
+        public readonly ?string $note,
+    ) {}
+}
 ```
 
-### Target a specific output file
+Generates:
+
+```typescript
+export type OrderData = {
+    readonly id: number;
+    readonly reference: string;
+    readonly total: number;
+    readonly paid: boolean;
+    readonly note: string | null;
+}
+```
+
+PHP → TypeScript type mapping:
+
+| PHP | TypeScript |
+|-----|------------|
+| `string` | `string` |
+| `int`, `float` | `number` |
+| `bool` | `boolean` |
+| `?T` | `T \| null` |
+| `T\|U` | `T \| U` |
+| `array` | `unknown[]` |
+| `mixed` | `any` |
+| `Carbon\Carbon` | `string` |
+| `Collection` | `unknown[]` |
+| Other class | short class name |
+
+Use the optional `name` parameter to override the TypeScript identifier:
+
+```php
+#[TSType(name: 'IOrder')]
+class OrderData { ... }
+// → export type IOrder = { ... }
+```
+
+---
+
+### `#[TSEnum]` — auto-generate from PHP enums
+
+Reads enum cases and their backing values automatically. No body to write.
+
+```php
+use Brunoscode\LaravelTsAnnotations\Attributes\TSEnum;
+
+// String-backed
+#[TSEnum]
+enum Status: string
+{
+    case Active   = 'active';
+    case Inactive = 'inactive';
+    case Pending  = 'pending';
+}
+// → export enum Status { Active = 'active', Inactive = 'inactive', Pending = 'pending', }
+
+// Int-backed
+#[TSEnum]
+enum Priority: int
+{
+    case Low    = 1;
+    case Medium = 2;
+    case High   = 3;
+}
+// → export enum Priority { Low = 1, Medium = 2, High = 3, }
+
+// Unit enum (no backing type) — case name used as string value
+#[TSEnum]
+enum Direction
+{
+    case North;
+    case South;
+    case East;
+    case West;
+}
+// → export enum Direction { North = 'North', South = 'South', East = 'East', West = 'West', }
+```
+
+---
+
+### Targeting a specific output file
+
+All three annotations accept an `output` parameter:
 
 ```php
 #[TS(<<<'TS'
-    export type AdminDashboard = {
-        users_count: number;
-        revenue: number;
-    }
+    export type AdminDashboard = { users_count: number; revenue: number; }
     TS, output: 'admin')]
-class DashboardController extends Controller {}
+
+#[TSType(output: 'admin')]
+class AdminUserData { ... }
+
+#[TSEnum(output: 'admin')]
+enum AdminRole: string { ... }
 ```
+
+The key must match one defined in `config/ts-annotations.php`.
+
+---
 
 ### Run the generator
 
@@ -272,25 +332,28 @@ php artisan ts:generate --output=admin
 php artisan ts:generate --dry-run
 ```
 
-> **Tip — heredoc indentation:** Use PHP 7.3 flexible heredoc by placing the closing `TS` marker at the same indentation level as the type body. PHP strips that many leading spaces from every line, giving you clean zero-based indentation in the output.
-
 ---
 
 ## Ordering in the output file
 
-Types are written in this order within each output file:
+Within each output file, entries are written in this order:
 
-1. Class-level `#[TS]` attributes, in the order the files are found during directory scan
-2. Method-level `#[TS]` attributes, sorted by line number within each class
+1. Class-level `#[TS]` attributes, in file-scan order
+2. `#[TSEnum]` entries, in file-scan order
+3. `#[TSType]` entries, in file-scan order
+4. Method-level `#[TS]` attributes, sorted by line number within each class
 
-The source is always noted in a comment above each type:
+Each entry is preceded by a source comment:
 
 ```typescript
 // --- App\Http\Resources\UserResource ---
 export type UserResponse = { ... }
 
-// --- App\Http\Controllers\UserController::index() ---
-export type UserListResponse = { ... }
+// --- App\Enums\Status ---
+export enum Status { ... }
+
+// --- App\Data\UserData ---
+export type UserData = { ... }
 ```
 
 ---
@@ -307,8 +370,6 @@ import type { CustomHelper } from './helpers'
 // ⚠️  Auto-generated — do not edit between these comments.
 // Generated at: 2026-05-10 12:00:00
 
-import type { PageProps } from '@inertiajs/core'
-
 // --- App\Http\Resources\UserResource ---
 export type UserResponse = { ... }
 // [ts-annotations:end]
@@ -324,7 +385,6 @@ If a file doesn't exist yet, it is created from scratch. If it exists but has no
 ## Roadmap
 
 - [ ] `--watch` flag for automatic regeneration on file change
-- [ ] Hybrid mode: infer TypeScript from PHP property types with `#[TSProp]` overrides
 
 ---
 

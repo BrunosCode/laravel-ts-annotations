@@ -57,7 +57,9 @@ laravel-ts-annotations/
 │
 ├── src/
 │   ├── Attributes/
-│   │   └── TS.php                    # L'attributo PHP #[TS(...)]
+│   │   ├── TS.php                    # #[TS(...)] — TypeScript verbatim su classe o metodo
+│   │   ├── TSEnum.php                # #[TSEnum] — enum TS auto-generato da PHP enum
+│   │   └── TSType.php                # #[TSType] — type alias TS inferito dalle property PHP
 │   │
 │   ├── Scanner/
 │   │   └── PhpFileScanner.php        # Scansiona le directory e ricava i FQCN
@@ -65,8 +67,9 @@ laravel-ts-annotations/
 │   │                                 # fare require delle classi
 │   │
 │   ├── Parser/
-│   │   └── AttributeParser.php       # Legge gli attributi #[TS] via Reflection
-│   │                                 # e raggruppa i body per chiave di output
+│   │   ├── AttributeParser.php       # Legge #[TS], #[TSEnum], #[TSType] via Reflection
+│   │   │                             # e raggruppa i body per chiave di output
+│   │   └── PhpToTsTypeMapper.php     # Mappa i tipi PHP nativi nei corrispettivi TypeScript
 │   │
 │   ├── Writer/
 │   │   └── TypeScriptFileWriter.php  # Scrive il .ts gestendo i marcatori:
@@ -84,9 +87,18 @@ laravel-ts-annotations/
 ├── tests/
 │   ├── TestCase.php                  # Base con Orchestra Testbench
 │   ├── Fixtures/
-│   │   └── UserResource.php          # Classe con #[TS] usata dai test
+│   │   ├── UserResource.php          # Classe con #[TS] (livello classe)
+│   │   ├── UserController.php        # Classe con #[TS] (livello metodo)
+│   │   ├── UserData.php              # DTO con #[TSType] e promoted constructor params
+│   │   ├── ProductData.php           # Classe con #[TSType] e property regolari
+│   │   ├── StatusEnum.php            # Enum string-backed con #[TSEnum]
+│   │   ├── PriorityEnum.php          # Enum int-backed con #[TSEnum]
+│   │   └── DirectionEnum.php         # Enum unit (senza backing type) con #[TSEnum]
 │   ├── Unit/
-│   │   └── WriterTest.php            # Test isolati sulla logica del Writer
+│   │   ├── WriterTest.php            # Test isolati sulla logica del Writer
+│   │   ├── AttributeParserTest.php   # Test su #[TS] (classe e metodi)
+│   │   ├── EnumParserTest.php        # Test su #[TSEnum]
+│   │   └── TSTypeParserTest.php      # Test su #[TSType]
 │   └── Feature/
 │       └── GenerateTypesCommandTest.php  # Test end-to-end del comando Artisan
 │
@@ -104,14 +116,32 @@ ts:generate
     │       Ricerca ricorsiva dei .php → estrazione FQCN con token_get_all()
     │
     ├── AttributeParser::parse(fqcns)
-    │       ReflectionClass → legge #[TS] → raggruppa per output key
-    │       [ 'default' => [['class' => ..., 'body' => ...], ...] ]
+    │       ReflectionClass per ogni FQCN:
+    │         • #[TS]      → body verbatim (classe o metodo)
+    │         • #[TSEnum]  → body generato da ReflectionEnum::getCases()
+    │         • #[TSType]  → body generato da ReflectionProperty (public, non-static)
+    │                        con PhpToTsTypeMapper per la traduzione dei tipi
+    │       Risultato: [ 'default' => [['class' => ..., 'body' => ...], ...] ]
     │
     └── TypeScriptFileWriter::write(path, entries, imports)
             Se file non esiste   → crea con blocco generato
             Se marcatori trovati → sostituisce solo la sezione tra essi
             Se no marcatori      → appende in fondo
 ```
+
+### Logica di generazione per `#[TSEnum]`
+
+`AttributeParser::generateEnumBody()` usa `ReflectionEnum`:
+- Enum backed string → `CaseName = 'backing_value',`
+- Enum backed int → `CaseName = backing_value,` (senza apici)
+- Enum unit (nessun tipo) → `CaseName = 'CaseName',`
+
+### Logica di generazione per `#[TSType]`
+
+`AttributeParser::generateTypeBody()` raccoglie le property public non-static dichiarate nella classe (escluse quelle ereditate). Per ogni property:
+- Il tipo PHP viene tradotto tramite `PhpToTsTypeMapper::map()`
+- Le property `readonly` ricevono il modificatore `readonly` anche in TypeScript
+- Il parametro opzionale `name` di `#[TSType]` sovrascrive il nome breve della classe
 
 ---
 
@@ -170,6 +200,7 @@ vendor/bin/phpunit
 - **Docblock** sui metodi pubblici con i tipi dei parametri e del ritorno, specialmente sulle API pubbliche del pacchetto.
 - **Nessuna dipendenza esterna** oltre a `illuminate/console` e `illuminate/support` — il pacchetto deve restare leggero.
 - Nella `TypeScriptFileWriter`, il corpo TypeScript va sempre passato attraverso `normalizeBody()` prima di scriverlo — non scrivere mai il raw body direttamente.
+- In `PhpToTsTypeMapper`, aggiungi nuove mappature nelle costanti `SCALARS` o `CLASS_OVERRIDES` — non disperdere la logica di mapping nei metodi dell'`AttributeParser`.
 
 ---
 
@@ -179,7 +210,7 @@ Usa i template GitHub quando disponibili. In ogni caso, includi sempre:
 
 **Per bug:**
 - Versione PHP e Laravel in uso
-- Il testo completo dell'attributo `#[TS]` che causa il problema
+- L'attributo o il tipo PHP che causa il problema
 - L'output attuale e quello atteso
 - Se possibile, un caso riproducibile minimale
 
@@ -208,4 +239,5 @@ La CI esegue i test su tutte le combinazioni supportate di PHP e Laravel. Tutte 
 Queste sono le aree dove i contributi sono particolarmente benvenuti:
 
 - **`--watch` flag** — rigenerazione automatica all'aggiornamento di un file PHP.
-- **Modalità ibrida** — inferire i tipi TypeScript dalle property PHP con possibilità di override tramite `#[TSProp('tipo')]`, senza richiedere il body completo nell'attributo.
+- **`#[TSHide]`** — attributo companion per escludere singole property dalla generazione di `#[TSType]`.
+- **Supporto PHPDoc** — leggere `@var` e `@property` per tipi più ricchi in `#[TSType]` (es. `array<string>` → `string[]`).

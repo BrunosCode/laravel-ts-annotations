@@ -3,9 +3,14 @@
 namespace Brunoscode\LaravelTsAnnotations\Parser;
 
 use Brunoscode\LaravelTsAnnotations\Attributes\TS;
+use Brunoscode\LaravelTsAnnotations\Attributes\TSEnum;
+use Brunoscode\LaravelTsAnnotations\Attributes\TSType;
 use ReflectionClass;
+use ReflectionEnum;
+use ReflectionEnumBackedCase;
 use ReflectionException;
 use ReflectionMethod;
+use ReflectionProperty;
 
 /**
  * Reads #[TS] attributes from a list of fully-qualified class names and
@@ -40,10 +45,27 @@ class AttributeParser
                 continue;
             }
 
-            // 1. Class-level attributes
+            // 1. Class-level #[TS] attributes
             $this->collectAttributes(
                 $reflection->getAttributes(TS::class),
                 label: $fqcn,
+                result: $result,
+            );
+
+            // 1b. #[TSEnum] on PHP enums — body auto-generated from cases
+            if (function_exists('enum_exists') && enum_exists($fqcn)) {
+                $this->collectEnumAttributes(
+                    $reflection->getAttributes(TSEnum::class),
+                    fqcn: $fqcn,
+                    result: $result,
+                );
+            }
+
+            // 1c. #[TSType] on PHP classes — body inferred from public properties
+            $this->collectTypeAttributes(
+                $reflection->getAttributes(TSType::class),
+                fqcn: $fqcn,
+                reflection: $reflection,
                 result: $result,
             );
 
@@ -90,6 +112,103 @@ class AttributeParser
                 'body'  => $ts->body,
             ];
         }
+    }
+
+    /**
+     * @param  \ReflectionAttribute[]                                          $attributes
+     * @param  string                                                           $fqcn
+     * @param  array<string, list<array{class: string, body: string}>>  $result
+     */
+    private function collectEnumAttributes(array $attributes, string $fqcn, array &$result): void
+    {
+        foreach ($attributes as $attribute) {
+            try {
+                /** @var TSEnum $tsEnum */
+                $tsEnum = $attribute->newInstance();
+            } catch (\Throwable) {
+                continue;
+            }
+
+            $result[$tsEnum->output][] = [
+                'class' => $fqcn,
+                'body'  => $this->generateEnumBody($fqcn),
+            ];
+        }
+    }
+
+    /**
+     * @param  \ReflectionAttribute[]                                         $attributes
+     * @param  string                                                          $fqcn
+     * @param  ReflectionClass                                                 $reflection
+     * @param  array<string, list<array{class: string, body: string}>> $result
+     */
+    private function collectTypeAttributes(
+        array $attributes,
+        string $fqcn,
+        ReflectionClass $reflection,
+        array &$result,
+    ): void {
+        foreach ($attributes as $attribute) {
+            try {
+                /** @var TSType $tsType */
+                $tsType = $attribute->newInstance();
+            } catch (\Throwable) {
+                continue;
+            }
+
+            $result[$tsType->output][] = [
+                'class' => $fqcn,
+                'body'  => $this->generateTypeBody($fqcn, $reflection, $tsType->name),
+            ];
+        }
+    }
+
+    private function generateTypeBody(string $fqcn, ReflectionClass $reflection, ?string $tsName): string
+    {
+        $name   = $tsName ?? $reflection->getShortName();
+        $mapper = new PhpToTsTypeMapper();
+        $lines  = ["export type {$name} = {"];
+
+        $properties = array_filter(
+            $reflection->getProperties(ReflectionProperty::IS_PUBLIC),
+            fn (ReflectionProperty $p) => ! $p->isStatic()
+                && $p->getDeclaringClass()->getName() === $fqcn,
+        );
+
+        foreach ($properties as $property) {
+            $readonly = $property->isReadOnly() ? 'readonly ' : '';
+            $type     = $property->getType();
+            $tsType   = $type !== null ? $mapper->map($type) : 'unknown';
+
+            $lines[] = "    {$readonly}{$property->getName()}: {$tsType};";
+        }
+
+        $lines[] = '}';
+
+        return implode("\n", $lines);
+    }
+
+    private function generateEnumBody(string $fqcn): string
+    {
+        $enumReflection = new ReflectionEnum($fqcn);
+        $shortName      = $enumReflection->getShortName();
+        $lines          = ["export enum {$shortName} {"];
+
+        foreach ($enumReflection->getCases() as $case) {
+            if ($case instanceof ReflectionEnumBackedCase) {
+                $value     = $case->getBackingValue();
+                $formatted = is_string($value) ? "'{$value}'" : $value;
+            } else {
+                // Unit enum: no backing type — use case name as string value
+                $formatted = "'{$case->getName()}'";
+            }
+
+            $lines[] = "    {$case->getName()} = {$formatted},";
+        }
+
+        $lines[] = '}';
+
+        return implode("\n", $lines);
     }
 
     private function classExists(string $fqcn): bool
