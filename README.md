@@ -130,8 +130,25 @@ return [
     'outputs' => [
         'default' => [
             'path'    => resource_path('js/types/generated.ts'),
+            // Lines written verbatim at the top of the generated section on every run.
+            // Useful for shared generics like CollectionResource / PaginatedResource.
             'imports' => [
-                // "import type { PageProps } from '@inertiajs/core'",
+                'export type CollectionResource<T> = { data: T[] };',
+                '',
+                'export type PaginatedResource<T> = {',
+                '    data: T[];',
+                '    total: number;',
+                '    per_page: number;',
+                '    current_page: number;',
+                '    last_page: number;',
+                '    from: number | null;',
+                '    to: number | null;',
+                '    first_page_url: string;',
+                '    last_page_url: string;',
+                '    next_page_url: string | null;',
+                '    prev_page_url: string | null;',
+                '    path: string;',
+                '};',
             ],
         ],
         // 'admin' => [
@@ -331,6 +348,159 @@ php artisan ts:generate --output=admin
 # Preview what would be written without touching any file
 php artisan ts:generate --dry-run
 ```
+
+---
+
+## Resources, collections, and Inertia
+
+Laravel Resources give you explicit control over the shape of data sent to the frontend — they transform Eloquent models rather than leaking raw attributes. Annotating them with `#[TS]` keeps that contract in sync with your TypeScript automatically.
+
+### 1. Define the resource shape
+
+```php
+use Brunoscode\LaravelTsAnnotations\Attributes\TS;
+use Illuminate\Http\Resources\Json\JsonResource;
+
+#[TS(<<<'TS'
+    export type UserResource = {
+        id: number;
+        name: string;
+        email: string;
+        role: 'admin' | 'editor' | 'viewer';
+    }
+    TS)]
+class UserResource extends JsonResource
+{
+    public function toArray(Request $request): array
+    {
+        return [
+            'id'    => $this->id,
+            'name'  => $this->name,
+            'email' => $this->email,
+            'role'  => $this->role,
+        ];
+    }
+}
+```
+
+Keeping the annotation on the Resource rather than the controller means the type and the transformation logic live together. If you tighten `toArray`, you update the `#[TS]` block in the same file.
+
+### 2. Annotate controller methods for Inertia
+
+The default config injects two generic helpers at the top of every generated file:
+
+```typescript
+export type CollectionResource<T> = { data: T[] };
+
+export type PaginatedResource<T> = {
+    data: T[];
+    total: number;
+    per_page: number;
+    current_page: number;
+    last_page: number;
+    from: number | null;
+    to: number | null;
+    // ...
+};
+```
+
+Reference them directly in the `#[TS]` attribute on each controller method that renders an Inertia page:
+
+```php
+use Brunoscode\LaravelTsAnnotations\Attributes\TS;
+use Inertia\Inertia;
+
+class UserController extends Controller
+{
+    #[TS('export type UserIndexProps = { users: PaginatedResource<UserResource> }')]
+    public function index(): \Inertia\Response
+    {
+        return Inertia::render('Users/Index', [
+            'users' => UserResource::collection(User::paginate()),
+        ]);
+    }
+
+    #[TS('export type UserListProps = { users: CollectionResource<UserResource> }')]
+    public function list(): \Inertia\Response
+    {
+        return Inertia::render('Users/List', [
+            'users' => UserResource::collection(User::all()),
+        ]);
+    }
+
+    #[TS('export type UserShowProps = { user: UserResource }')]
+    public function show(User $user): \Inertia\Response
+    {
+        return Inertia::render('Users/Show', [
+            'user' => new UserResource($user),
+        ]);
+    }
+}
+```
+
+### 3. Generated TypeScript
+
+```typescript
+// resources/js/types/generated.ts
+
+// [ts-annotations:start]
+// ⚠️  Auto-generated — do not edit between these comments.
+
+export type CollectionResource<T> = { data: T[] };
+
+export type PaginatedResource<T> = {
+    data: T[];
+    total: number;
+    per_page: number;
+    current_page: number;
+    last_page: number;
+    from: number | null;
+    to: number | null;
+    first_page_url: string;
+    last_page_url: string;
+    next_page_url: string | null;
+    prev_page_url: string | null;
+    path: string;
+};
+
+// --- App\Http\Resources\UserResource ---
+export type UserResource = {
+    id: number;
+    name: string;
+    email: string;
+    role: 'admin' | 'editor' | 'viewer';
+}
+
+// --- App\Http\Controllers\UserController ---
+export type UserIndexProps = { users: PaginatedResource<UserResource> }
+export type UserListProps  = { users: CollectionResource<UserResource> }
+export type UserShowProps  = { user: UserResource }
+// [ts-annotations:end]
+```
+
+### 4. Consume in an Inertia component
+
+```vue
+<script setup lang="ts">
+import type { UserIndexProps } from '@/types/generated'
+
+const props = defineProps<UserIndexProps>()
+// props.users.data        → UserResource[]
+// props.users.total       → number
+// props.users.current_page → number
+</script>
+```
+
+```vue
+<script setup lang="ts">
+import type { UserShowProps } from '@/types/generated'
+
+const props = defineProps<UserShowProps>()
+// props.user.id, props.user.name, props.user.role — fully typed
+</script>
+```
+
+> `CollectionResource<T>` and `PaginatedResource<T>` are injected via the `imports` key in `config/ts-annotations.php`. Customise them there or add any other shared helpers your app needs.
 
 ---
 

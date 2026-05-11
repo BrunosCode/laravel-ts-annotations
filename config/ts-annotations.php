@@ -14,6 +14,8 @@ return [
     */
     'scan' => [
         app_path('Http'),
+        app_path('Enum'),
+        app_path('Data'),
     ],
 
     /*
@@ -37,8 +39,22 @@ return [
         'default' => [
             'path'    => resource_path('js/types/generated.ts'),
             'imports' => [
-                // "import type { PageProps } from '@inertiajs/core'",
-                // "import type { AxiosInstance } from 'axios'",
+                'export type CollectionResource<T> = { data: T[] };',
+                '',
+                'export type PaginatedResource<T> = {',
+                '    data: T[];',
+                '    total: number;',
+                '    per_page: number;',
+                '    current_page: number;',
+                '    last_page: number;',
+                '    from: number | null;',
+                '    to: number | null;',
+                '    first_page_url: string;',
+                '    last_page_url: string;',
+                '    next_page_url: string | null;',
+                '    prev_page_url: string | null;',
+                '    path: string;',
+                '};',
             ],
         ],
     ],
