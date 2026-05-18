@@ -70,7 +70,9 @@ class AttributeParser
             );
 
             // 2. Method-level attributes, ordered by line of declaration
-            $methods = $reflection->getMethods(ReflectionMethod::IS_PUBLIC);
+            $methods = $reflection->getMethods(
+                ReflectionMethod::IS_PUBLIC | ReflectionMethod::IS_PROTECTED | ReflectionMethod::IS_PRIVATE,
+            );
 
             usort($methods, fn (ReflectionMethod $a, ReflectionMethod $b)
                 => ($a->getStartLine() ?? 0) <=> ($b->getStartLine() ?? 0));

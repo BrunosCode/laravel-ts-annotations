@@ -5,6 +5,7 @@ namespace Brunoscode\LaravelTsAnnotations\Tests\Unit;
 use Brunoscode\LaravelTsAnnotations\Parser\AttributeParser;
 use Brunoscode\LaravelTsAnnotations\Tests\Fixtures\UserController;
 use Brunoscode\LaravelTsAnnotations\Tests\Fixtures\UserResource;
+use Brunoscode\LaravelTsAnnotations\Tests\Fixtures\VisibilityController;
 use Brunoscode\LaravelTsAnnotations\Tests\TestCase;
 
 class AttributeParserTest extends TestCase
@@ -126,5 +127,21 @@ class AttributeParserTest extends TestCase
         foreach ($result['default'] as $entry) {
             $this->assertStringStartsWith(UserController::class, $entry['class']);
         }
+    }
+
+    // ── Method visibility ─────────────────────────────────────────────────────
+
+    public function test_collects_ts_attributes_from_methods_of_any_visibility(): void
+    {
+        $result = $this->parser->parse([VisibilityController::class]);
+
+        $this->assertArrayHasKey('default', $result);
+        $this->assertCount(3, $result['default']);
+
+        $bodies = array_column($result['default'], 'body');
+
+        $this->assertContains('export type PublicShape = { kind: "public" };',       $bodies);
+        $this->assertContains('export type ProtectedShape = { kind: "protected" };', $bodies);
+        $this->assertContains('export type PrivateShape = { kind: "private" };',     $bodies);
     }
 }
