@@ -4,6 +4,7 @@
 
 [![Latest Version on Packagist](https://img.shields.io/packagist/v/brunoscode/laravel-ts-annotations.svg?style=flat-square)](https://packagist.org/packages/brunoscode/laravel-ts-annotations)
 [![GitHub Tests Action Status](https://img.shields.io/github/actions/workflow/status/BrunosCode/LaravelTsAnnotations/tests.yml?branch=main&label=tests&style=flat-square)](https://github.com/BrunosCode/LaravelTsAnnotations/actions?query=workflow%3Atests+branch%3Amain)
+[![GitHub Code Style Action Status](https://img.shields.io/github/actions/workflow/status/BrunosCode/LaravelTsAnnotations/fix-php-code-style-issues.yml?branch=main&label=code%20style&style=flat-square)](https://github.com/BrunosCode/LaravelTsAnnotations/actions?query=workflow%3A"Fix+PHP+code+style+issues"+branch%3Amain)
 [![Total Downloads](https://img.shields.io/packagist/dt/brunoscode/laravel-ts-annotations.svg?style=flat-square)](https://packagist.org/packages/brunoscode/laravel-ts-annotations)
 [![License](https://img.shields.io/packagist/l/brunoscode/laravel-ts-annotations.svg?style=flat-square)](LICENSE.md)
 
