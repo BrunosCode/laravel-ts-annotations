@@ -1,6 +1,66 @@
-# laravel-ts-annotations
+# Laravel TS Annotations
 
-Generate TypeScript types from PHP attributes with a single Artisan command. Three annotation styles — raw TypeScript, auto-inferred from class properties, and auto-inferred from enums — cover every common case.
+> Generate TypeScript types from PHP attributes and emit them to `.ts` files with a single Artisan command — for Laravel apps with a typed frontend.
+
+[![Latest Version on Packagist](https://img.shields.io/packagist/v/brunoscode/laravel-ts-annotations.svg?style=flat-square)](https://packagist.org/packages/brunoscode/laravel-ts-annotations)
+[![Tests](https://img.shields.io/github/actions/workflow/status/BrunosCode/laravel-ts-annotations/tests.yml?branch=main&label=tests&style=flat-square)](https://github.com/BrunosCode/laravel-ts-annotations/actions/workflows/tests.yml)
+[![Total Downloads](https://img.shields.io/packagist/dt/brunoscode/laravel-ts-annotations.svg?style=flat-square)](https://packagist.org/packages/brunoscode/laravel-ts-annotations)
+[![License](https://img.shields.io/packagist/l/brunoscode/laravel-ts-annotations.svg?style=flat-square)](LICENSE.md)
+
+Three annotation styles — raw TypeScript, auto-inferred from class properties, and auto-inferred from enums — cover every common case.
+
+- [Why this package?](#why-this-package)
+- [Requirements](#requirements)
+- [Installation](#installation)
+- [Laravel Boost](#laravel-boost)
+- [Quick start](#quick-start)
+- [Configuration](#configuration)
+- [Usage](#usage)
+- [Resources, collections, and Inertia](#resources-collections-and-inertia)
+- [Ordering in the output file](#ordering-in-the-output-file)
+- [File preservation](#file-preservation)
+- [Roadmap](#roadmap)
+- [Testing](#testing)
+- [Changelog](#changelog)
+- [Credits](#credits)
+- [License](#license)
+
+---
+
+## Why this package?
+
+Most solutions either **infer** TypeScript from PHP types (losing union types, template literals, generics) or go through a Swagger/OpenAPI intermediary (indirect and verbose). This package gives you three levels of control:
+
+- `#[TS]` — write **real TypeScript** verbatim when you need unions, templates, or generics
+- `#[TSType]` — **auto-infer** from PHP property types for simple DTOs and data classes
+- `#[TSEnum]` — **auto-generate** TypeScript enums from PHP backed or unit enums
+
+---
+
+## Requirements
+
+| Laravel | PHP    |
+| ------- | ------ |
+| 10.x    | 8.1+   |
+| 11.x    | 8.2+   |
+| 12.x    | 8.2+   |
+| 13.x    | 8.3+   |
+
+---
+
+## Installation
+
+```bash
+composer require brunoscode/laravel-ts-annotations
+```
+
+Publish the config file:
+
+```bash
+php artisan vendor:publish --tag=ts-annotations-config
+```
+
+---
 
 ## Laravel Boost
 
@@ -81,37 +141,6 @@ export enum Status {
 
 ---
 
-## Why this package?
-
-Most solutions either **infer** TypeScript from PHP types (losing union types, template literals, generics) or go through a Swagger/OpenAPI intermediary (indirect and verbose). This package gives you three levels of control:
-
-- `#[TS]` — write **real TypeScript** verbatim when you need unions, templates, or generics
-- `#[TSType]` — **auto-infer** from PHP property types for simple DTOs and data classes
-- `#[TSEnum]` — **auto-generate** TypeScript enums from PHP backed or unit enums
-
----
-
-## Requirements
-
-- PHP 8.1+
-- Laravel 10, 11, 12, or 13
-
----
-
-## Installation
-
-```bash
-composer require brunoscode/laravel-ts-annotations
-```
-
-Publish the config file:
-
-```bash
-php artisan vendor:publish --tag=ts-annotations-config
-```
-
----
-
 ## Configuration
 
 ```php
@@ -122,8 +151,8 @@ return [
     // Directories scanned recursively for all annotation types.
     'scan' => [
         app_path('Http'),       // covers Resources, Controllers, Requests, Middleware
+        app_path('Enum'),       // enums annotated with #[TSEnum]
         app_path('Data'),       // DTOs annotated with #[TSType]
-        app_path('Enums'),      // enums annotated with #[TSEnum]
     ],
 
     // Output .ts files. The array key is referenced in the `output` param.
@@ -222,6 +251,8 @@ class UserController extends Controller
 
 Inspects all public non-static properties (including promoted constructor params) via Reflection and maps PHP types to TypeScript. The `readonly` modifier is preserved.
 
+Only properties **declared on the class itself** are emitted — properties inherited from a parent class are skipped. Annotate the parent with `#[TSType]` too if you need its properties in a separate type.
+
 ```php
 use Brunoscode\LaravelTsAnnotations\Attributes\TSType;
 
@@ -261,9 +292,15 @@ PHP → TypeScript type mapping:
 | `T\|U` | `T \| U` |
 | `array` | `unknown[]` |
 | `mixed` | `any` |
-| `Carbon\Carbon` | `string` |
-| `Collection` | `unknown[]` |
-| Other class | short class name |
+| `object` | `object` |
+| `void`, `never` | `void`, `never` |
+| `self`, `static` | `this` |
+| `T & U` (intersection) | `T & U` |
+| `Carbon\Carbon`, `CarbonImmutable`, `Illuminate\Support\Carbon` | `string` |
+| `Illuminate\Support\Collection`, Eloquent `Collection` | `unknown[]` |
+| Any other class | short class name |
+
+Only the exact Carbon/Collection FQCNs above are remapped. A different class named `Collection` (e.g. your own `App\Support\Collection`) falls through to the short-name rule and becomes the literal `Collection`, **not** `unknown[]`.
 
 Use the optional `name` parameter to override the TypeScript identifier:
 
@@ -506,12 +543,14 @@ const props = defineProps<UserShowProps>()
 
 ## Ordering in the output file
 
-Within each output file, entries are written in this order:
+Entries follow **file-scan order across classes**. Within a single class they are emitted in this fixed order:
 
-1. Class-level `#[TS]` attributes, in file-scan order
-2. `#[TSEnum]` entries, in file-scan order
-3. `#[TSType]` entries, in file-scan order
-4. Method-level `#[TS]` attributes, sorted by line number within each class
+1. Class-level `#[TS]` attributes
+2. `#[TSEnum]` (only on enums)
+3. `#[TSType]` (inferred from the class)
+4. Method-level `#[TS]` attributes, sorted by line number
+
+There is **no** global grouping by attribute type. A `#[TSEnum]` in a class that is scanned before a `#[TS]` resource appears first in the output. The result looks grouped only when your `scan` paths are themselves ordered by kind (e.g. `Http`, then `Enum`, then `Data`) — that grouping comes from scan order, not from an intrinsic sort.
 
 Each entry is preceded by a source comment:
 
@@ -554,19 +593,33 @@ If a file doesn't exist yet, it is created from scratch. If it exists but has no
 
 ## Roadmap
 
-- [ ] `--watch` flag for automatic regeneration on file change
+Planned, not yet shipped:
+
+- `--watch` flag for automatic regeneration on file change
 
 ---
 
 ## Testing
 
 ```bash
-composer install
-vendor/bin/phpunit
+composer test
 ```
+
+---
+
+## Changelog
+
+See [CHANGELOG.md](CHANGELOG.md) for what has changed recently.
+
+---
+
+## Credits
+
+- [Bruno Magnani](https://github.com/BrunosCode)
+- [All Contributors](https://github.com/BrunosCode/laravel-ts-annotations/contributors)
 
 ---
 
 ## License
 
-MIT — see [LICENSE](LICENSE).
+The MIT License (MIT). Please see the [License File](LICENSE.md) for more information.
