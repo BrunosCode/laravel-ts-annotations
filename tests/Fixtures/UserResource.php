@@ -25,6 +25,4 @@ use BrunosCode\LaravelTsAnnotations\Attributes\TS;
         total: number;
     }
     TS, output: 'default')]
-class UserResource
-{
-}
+class UserResource {}

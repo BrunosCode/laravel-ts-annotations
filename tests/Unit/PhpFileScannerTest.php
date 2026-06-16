@@ -8,13 +8,14 @@ use BrunosCode\LaravelTsAnnotations\Tests\TestCase;
 class PhpFileScannerTest extends TestCase
 {
     private PhpFileScanner $scanner;
+
     private string $tmpDir;
 
     protected function setUp(): void
     {
         parent::setUp();
-        $this->scanner = new PhpFileScanner();
-        $this->tmpDir  = sys_get_temp_dir() . '/ts-scanner-' . uniqid();
+        $this->scanner = new PhpFileScanner;
+        $this->tmpDir = sys_get_temp_dir().'/ts-scanner-'.uniqid();
         mkdir($this->tmpDir, 0755, true);
     }
 
@@ -28,7 +29,7 @@ class PhpFileScannerTest extends TestCase
 
     private function write(string $filename, string $content): void
     {
-        file_put_contents($this->tmpDir . '/' . $filename, $content);
+        file_put_contents($this->tmpDir.'/'.$filename, $content);
     }
 
     private function removeDir(string $dir): void
@@ -42,7 +43,7 @@ class PhpFileScannerTest extends TestCase
                 continue;
             }
 
-            $path = $dir . '/' . $entry;
+            $path = $dir.'/'.$entry;
             is_dir($path) ? $this->removeDir($path) : unlink($path);
         }
 
@@ -172,9 +173,9 @@ class PhpFileScannerTest extends TestCase
 
     public function test_scans_subdirectories_recursively(): void
     {
-        $sub = $this->tmpDir . '/Sub';
+        $sub = $this->tmpDir.'/Sub';
         mkdir($sub);
-        file_put_contents($sub . '/Deep.php', <<<'PHP'
+        file_put_contents($sub.'/Deep.php', <<<'PHP'
             <?php
             namespace App\Deep;
             class Deep {}
@@ -187,11 +188,11 @@ class PhpFileScannerTest extends TestCase
 
     public function test_scans_multiple_paths(): void
     {
-        $other = $this->tmpDir . '/Other';
+        $other = $this->tmpDir.'/Other';
         mkdir($other);
 
         $this->write('First.php', "<?php\nnamespace A;\nclass First {}");
-        file_put_contents($other . '/Second.php', "<?php\nnamespace B;\nclass Second {}");
+        file_put_contents($other.'/Second.php', "<?php\nnamespace B;\nclass Second {}");
 
         $fqcns = $this->scanner->scan([$this->tmpDir, $other]);
 
@@ -201,7 +202,7 @@ class PhpFileScannerTest extends TestCase
 
     public function test_skips_path_that_is_a_file_not_a_directory(): void
     {
-        $file = $this->tmpDir . '/notadir.php';
+        $file = $this->tmpDir.'/notadir.php';
         file_put_contents($file, '<?php class Foo {}');
 
         // Pass the file path itself as a "directory" — should be skipped

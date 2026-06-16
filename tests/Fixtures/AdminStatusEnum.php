@@ -7,6 +7,6 @@ use BrunosCode\LaravelTsAnnotations\Attributes\TSEnum;
 #[TSEnum(output: 'admin')]
 enum AdminStatusEnum: string
 {
-    case Active    = 'active';
+    case Active = 'active';
     case Suspended = 'suspended';
 }

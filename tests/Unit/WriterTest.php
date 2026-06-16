@@ -8,14 +8,15 @@ use BrunosCode\LaravelTsAnnotations\Writer\TypeScriptFileWriter;
 class WriterTest extends TestCase
 {
     private const START = '// [ts-annotations:start]';
-    private const END   = '// [ts-annotations:end]';
+
+    private const END = '// [ts-annotations:end]';
 
     private string $tmpFile;
 
     protected function setUp(): void
     {
         parent::setUp();
-        $this->tmpFile = sys_get_temp_dir() . '/ts-annotations-' . uniqid() . '.ts';
+        $this->tmpFile = sys_get_temp_dir().'/ts-annotations-'.uniqid().'.ts';
     }
 
     protected function tearDown(): void
@@ -37,7 +38,7 @@ class WriterTest extends TestCase
     private function entries(string ...$bodies): array
     {
         return array_map(
-            fn (string $body, int $i) => ['class' => 'App\\Resource' . $i, 'body' => $body],
+            fn (string $body, int $i) => ['class' => 'App\\Resource'.$i, 'body' => $body],
             $bodies,
             array_keys($bodies),
         );
@@ -87,8 +88,8 @@ class WriterTest extends TestCase
 
         // Imports must be between the markers
         $start = strpos($content, self::START);
-        $end   = strpos($content, self::END);
-        $pos   = strpos($content, "import type { PageProps }");
+        $end = strpos($content, self::END);
+        $pos = strpos($content, 'import type { PageProps }');
 
         $this->assertGreaterThan($start, $pos);
         $this->assertLessThan($end, $pos);
@@ -96,7 +97,7 @@ class WriterTest extends TestCase
 
     public function test_replaces_generated_section_and_preserves_manual_content(): void
     {
-        $existing = <<<TS
+        $existing = <<<'TS'
         // Manual import above markers
         import type { Foo } from './foo'
 
@@ -183,7 +184,7 @@ class WriterTest extends TestCase
 
     public function test_appends_when_only_start_marker_present(): void
     {
-        file_put_contents($this->tmpFile, "manual\n" . self::START . "\nold content\n");
+        file_put_contents($this->tmpFile, "manual\n".self::START."\nold content\n");
 
         $this->makeWriter()->write($this->tmpFile, $this->entries('export type New = {}'), []);
 
@@ -197,7 +198,7 @@ class WriterTest extends TestCase
 
     public function test_appends_when_only_end_marker_present(): void
     {
-        file_put_contents($this->tmpFile, "manual\nold content\n" . self::END . "\n");
+        file_put_contents($this->tmpFile, "manual\nold content\n".self::END."\n");
 
         $this->makeWriter()->write($this->tmpFile, $this->entries('export type New = {}'), []);
 
@@ -211,7 +212,7 @@ class WriterTest extends TestCase
     public function test_appends_when_end_marker_precedes_start_marker(): void
     {
         // Reversed markers — condition $endPos > $startPos is false → fall to append
-        file_put_contents($this->tmpFile, self::END . "\nmanual\n" . self::START . "\n");
+        file_put_contents($this->tmpFile, self::END."\nmanual\n".self::START."\n");
 
         $this->makeWriter()->write($this->tmpFile, $this->entries('export type New = {}'), []);
 

@@ -37,7 +37,7 @@ return [
     */
     'outputs' => [
         'default' => [
-            'path'    => resource_path('js/types/generated.ts'),
+            'path' => resource_path('js/types/generated.ts'),
             'imports' => [
                 'export type CollectionResource<T> = { data: T[] };',
                 '',
@@ -71,7 +71,7 @@ return [
     */
     'markers' => [
         'start' => '// [ts-annotations:start]',
-        'end'   => '// [ts-annotations:end]',
+        'end' => '// [ts-annotations:end]',
     ],
 
 ];

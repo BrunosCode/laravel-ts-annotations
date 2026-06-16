@@ -7,6 +7,7 @@ use BrunosCode\LaravelTsAnnotations\Tests\Fixtures\AdminStatusEnum;
 use BrunosCode\LaravelTsAnnotations\Tests\Fixtures\DirectionEnum;
 use BrunosCode\LaravelTsAnnotations\Tests\Fixtures\PriorityEnum;
 use BrunosCode\LaravelTsAnnotations\Tests\Fixtures\StatusEnum;
+use BrunosCode\LaravelTsAnnotations\Tests\Fixtures\UserResource;
 use BrunosCode\LaravelTsAnnotations\Tests\TestCase;
 
 class EnumParserTest extends TestCase
@@ -16,7 +17,7 @@ class EnumParserTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->parser = new AttributeParser();
+        $this->parser = new AttributeParser;
     }
 
     // ── String-backed enum ────────────────────────────────────────────────────
@@ -39,23 +40,23 @@ class EnumParserTest extends TestCase
     public function test_string_backed_enum_generates_ts_enum_block(): void
     {
         $result = $this->parser->parse([StatusEnum::class]);
-        $body   = $result['default'][0]['body'];
+        $body = $result['default'][0]['body'];
 
         $this->assertStringContainsString('export enum StatusEnum {', $body);
-        $this->assertStringContainsString("Active = 'active',",   $body);
+        $this->assertStringContainsString("Active = 'active',", $body);
         $this->assertStringContainsString("Inactive = 'inactive',", $body);
-        $this->assertStringContainsString("Pending = 'pending',",  $body);
+        $this->assertStringContainsString("Pending = 'pending',", $body);
         $this->assertStringEndsWith('}', $body);
     }
 
     public function test_string_backed_enum_values_are_quoted(): void
     {
         $result = $this->parser->parse([StatusEnum::class]);
-        $body   = $result['default'][0]['body'];
+        $body = $result['default'][0]['body'];
 
-        $this->assertStringContainsString("'active'",   $body);
+        $this->assertStringContainsString("'active'", $body);
         $this->assertStringContainsString("'inactive'", $body);
-        $this->assertStringContainsString("'pending'",  $body);
+        $this->assertStringContainsString("'pending'", $body);
     }
 
     // ── Int-backed enum ───────────────────────────────────────────────────────
@@ -63,18 +64,18 @@ class EnumParserTest extends TestCase
     public function test_int_backed_enum_generates_ts_enum_block(): void
     {
         $result = $this->parser->parse([PriorityEnum::class]);
-        $body   = $result['default'][0]['body'];
+        $body = $result['default'][0]['body'];
 
         $this->assertStringContainsString('export enum PriorityEnum {', $body);
-        $this->assertStringContainsString('Low = 1,',    $body);
+        $this->assertStringContainsString('Low = 1,', $body);
         $this->assertStringContainsString('Medium = 2,', $body);
-        $this->assertStringContainsString('High = 3,',   $body);
+        $this->assertStringContainsString('High = 3,', $body);
     }
 
     public function test_int_backed_enum_values_are_not_quoted(): void
     {
         $result = $this->parser->parse([PriorityEnum::class]);
-        $body   = $result['default'][0]['body'];
+        $body = $result['default'][0]['body'];
 
         // Values must be bare integers, not strings
         $this->assertStringNotContainsString("'1'", $body);
@@ -87,18 +88,18 @@ class EnumParserTest extends TestCase
     public function test_unit_enum_generates_ts_enum_block(): void
     {
         $result = $this->parser->parse([DirectionEnum::class]);
-        $body   = $result['default'][0]['body'];
+        $body = $result['default'][0]['body'];
 
         $this->assertStringContainsString('export enum DirectionEnum {', $body);
         $this->assertStringContainsString("North = 'North',", $body);
         $this->assertStringContainsString("South = 'South',", $body);
-        $this->assertStringContainsString("East = 'East',",   $body);
-        $this->assertStringContainsString("West = 'West',",   $body);
+        $this->assertStringContainsString("East = 'East',", $body);
+        $this->assertStringContainsString("West = 'West',", $body);
     }
 
     // ── Output routing ────────────────────────────────────────────────────────
 
-    public function test_tsEnum_output_key_routes_to_correct_group(): void
+    public function test_ts_enum_output_key_routes_to_correct_group(): void
     {
         $result = $this->parser->parse([StatusEnum::class]);
 
@@ -118,10 +119,10 @@ class EnumParserTest extends TestCase
 
     // ── No interference with plain classes ────────────────────────────────────
 
-    public function test_tsEnum_not_applied_to_non_enum_classes(): void
+    public function test_ts_enum_not_applied_to_non_enum_classes(): void
     {
         // UserResource is a plain class — TSEnum should have no effect
-        $result = $this->parser->parse([\BrunosCode\LaravelTsAnnotations\Tests\Fixtures\UserResource::class]);
+        $result = $this->parser->parse([UserResource::class]);
 
         // Only #[TS] entries should be present, not any auto-generated enum body
         foreach ($result['default'] ?? [] as $entry) {

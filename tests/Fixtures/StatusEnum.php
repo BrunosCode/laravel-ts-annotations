@@ -7,7 +7,7 @@ use BrunosCode\LaravelTsAnnotations\Attributes\TSEnum;
 #[TSEnum]
 enum StatusEnum: string
 {
-    case Active   = 'active';
+    case Active = 'active';
     case Inactive = 'inactive';
-    case Pending  = 'pending';
+    case Pending = 'pending';
 }

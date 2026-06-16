@@ -19,10 +19,10 @@ class TypeScriptFileWriter
     ) {}
 
     /**
-     * @param  string                                   $filePath  Absolute path to the .ts file.
-     * @param  list<array{class: string, body: string}> $entries   Ordered list of types to emit.
-     * @param  string[]                                 $imports   Import lines from config.
-     * @return string                                              Final file content written to disk.
+     * @param  string  $filePath  Absolute path to the .ts file.
+     * @param  list<array{class: string, body: string}>  $entries  Ordered list of types to emit.
+     * @param  string[]  $imports  Import lines from config.
+     * @return string Final file content written to disk.
      */
     public function write(string $filePath, array $entries, array $imports): string
     {
@@ -30,7 +30,7 @@ class TypeScriptFileWriter
 
         if (! file_exists($filePath)) {
             $this->ensureDirectory($filePath);
-            file_put_contents($filePath, $generatedBlock . "\n");
+            file_put_contents($filePath, $generatedBlock."\n");
 
             return $generatedBlock;
         }
@@ -38,13 +38,13 @@ class TypeScriptFileWriter
         $existing = file_get_contents($filePath);
 
         $startPos = strpos($existing, $this->startMarker);
-        $endPos   = strpos($existing, $this->endMarker);
+        $endPos = strpos($existing, $this->endMarker);
 
         // Markers found — replace only the generated section
         if ($startPos !== false && $endPos !== false && $endPos > $startPos) {
-            $before  = substr($existing, 0, $startPos);
-            $after   = substr($existing, $endPos + strlen($this->endMarker));
-            $content = $before . $generatedBlock . $after;
+            $before = substr($existing, 0, $startPos);
+            $after = substr($existing, $endPos + strlen($this->endMarker));
+            $content = $before.$generatedBlock.$after;
 
             file_put_contents($filePath, $content);
 
@@ -52,7 +52,7 @@ class TypeScriptFileWriter
         }
 
         // No markers — append at the end so we never destroy manual content
-        $content = rtrim($existing) . "\n\n" . $generatedBlock . "\n";
+        $content = rtrim($existing)."\n\n".$generatedBlock."\n";
         file_put_contents($filePath, $content);
 
         return $content;
@@ -66,7 +66,7 @@ class TypeScriptFileWriter
 
         $lines[] = $this->startMarker;
         $lines[] = '// ⚠️  Auto-generated — do not edit between these comments.';
-        $lines[] = '// Generated at: ' . date('Y-m-d H:i:s');
+        $lines[] = '// Generated at: '.date('Y-m-d H:i:s');
 
         if (! empty($imports)) {
             $lines[] = '';
@@ -78,7 +78,7 @@ class TypeScriptFileWriter
 
         foreach ($entries as $entry) {
             $lines[] = '';
-            $lines[] = '// --- ' . $entry['class'] . ' ---';
+            $lines[] = '// --- '.$entry['class'].' ---';
             $lines[] = $this->normalizeBody($entry['body']);
         }
 
