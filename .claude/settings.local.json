@@ -1,7 +1,0 @@
-{
-  "permissions": {
-    "allow": [
-      "Bash(find /tmp/typescript-transformer/tests -name \"*.php\" -path \"*/FakeClasses*\" | head -5)"
-    ]
-  }
-}
