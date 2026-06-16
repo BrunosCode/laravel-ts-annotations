@@ -1,6 +1,6 @@
 <?php
 
-namespace Brunoscode\LaravelTsAnnotations\Scanner;
+namespace BrunosCode\LaravelTsAnnotations\Scanner;
 
 /**
  * Recursively scans directories for PHP files and extracts the fully
@@ -14,7 +14,7 @@ class PhpFileScanner
 {
     /**
      * @param  string[]  $paths  Absolute directory paths to scan.
-     * @return string[]          List of FQCNs found across all files.
+     * @return string[] List of FQCNs found across all files.
      */
     public function scan(array $paths): array
     {
@@ -63,10 +63,10 @@ class PhpFileScanner
         }
 
         $tokens = token_get_all($content);
-        $count  = count($tokens);
+        $count = count($tokens);
 
         $namespace = '';
-        $class     = null;
+        $class = null;
 
         for ($i = 0; $i < $count; $i++) {
             $token = $tokens[$i];
@@ -99,6 +99,7 @@ class PhpFileScanner
                 }
 
                 $namespace = $ns;
+
                 continue;
             }
 
@@ -130,6 +131,6 @@ class PhpFileScanner
             return null;
         }
 
-        return $namespace !== '' ? $namespace . '\\' . $class : $class;
+        return $namespace !== '' ? $namespace.'\\'.$class : $class;
     }
 }

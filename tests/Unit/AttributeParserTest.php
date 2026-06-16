@@ -1,12 +1,12 @@
 <?php
 
-namespace Brunoscode\LaravelTsAnnotations\Tests\Unit;
+namespace BrunosCode\LaravelTsAnnotations\Tests\Unit;
 
-use Brunoscode\LaravelTsAnnotations\Parser\AttributeParser;
-use Brunoscode\LaravelTsAnnotations\Tests\Fixtures\UserController;
-use Brunoscode\LaravelTsAnnotations\Tests\Fixtures\UserResource;
-use Brunoscode\LaravelTsAnnotations\Tests\Fixtures\VisibilityController;
-use Brunoscode\LaravelTsAnnotations\Tests\TestCase;
+use BrunosCode\LaravelTsAnnotations\Parser\AttributeParser;
+use BrunosCode\LaravelTsAnnotations\Tests\Fixtures\UserController;
+use BrunosCode\LaravelTsAnnotations\Tests\Fixtures\UserResource;
+use BrunosCode\LaravelTsAnnotations\Tests\Fixtures\VisibilityController;
+use BrunosCode\LaravelTsAnnotations\Tests\TestCase;
 
 class AttributeParserTest extends TestCase
 {
@@ -15,7 +15,7 @@ class AttributeParserTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->parser = new AttributeParser();
+        $this->parser = new AttributeParser;
     }
 
     // ── Class-level attributes ────────────────────────────────────────────────
@@ -40,7 +40,7 @@ class AttributeParserTest extends TestCase
         $result = $this->parser->parse([UserResource::class]);
 
         $this->assertStringContainsString('export type UserResponse', $result['default'][0]['body']);
-        $this->assertStringContainsString('export type UserIndex',    $result['default'][1]['body']);
+        $this->assertStringContainsString('export type UserIndex', $result['default'][1]['body']);
     }
 
     // ── Method-level attributes ───────────────────────────────────────────────
@@ -59,9 +59,9 @@ class AttributeParserTest extends TestCase
 
         $labels = array_column($result['default'], 'class');
 
-        $this->assertContains(UserController::class . '::index()',  $labels);
-        $this->assertContains(UserController::class . '::show()',   $labels);
-        $this->assertContains(UserController::class . '::store()',  $labels);
+        $this->assertContains(UserController::class.'::index()', $labels);
+        $this->assertContains(UserController::class.'::show()', $labels);
+        $this->assertContains(UserController::class.'::store()', $labels);
     }
 
     public function test_methods_are_ordered_by_declaration(): void
@@ -71,9 +71,9 @@ class AttributeParserTest extends TestCase
         $labels = array_column($result['default'], 'class');
 
         $this->assertSame([
-            UserController::class . '::index()',
-            UserController::class . '::show()',
-            UserController::class . '::store()',
+            UserController::class.'::index()',
+            UserController::class.'::show()',
+            UserController::class.'::store()',
         ], $labels);
     }
 
@@ -140,8 +140,8 @@ class AttributeParserTest extends TestCase
 
         $bodies = array_column($result['default'], 'body');
 
-        $this->assertContains('export type PublicShape = { kind: "public" };',       $bodies);
+        $this->assertContains('export type PublicShape = { kind: "public" };', $bodies);
         $this->assertContains('export type ProtectedShape = { kind: "protected" };', $bodies);
-        $this->assertContains('export type PrivateShape = { kind: "private" };',     $bodies);
+        $this->assertContains('export type PrivateShape = { kind: "private" };', $bodies);
     }
 }

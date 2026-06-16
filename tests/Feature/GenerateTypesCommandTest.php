@@ -1,8 +1,8 @@
 <?php
 
-namespace Brunoscode\LaravelTsAnnotations\Tests\Feature;
+namespace BrunosCode\LaravelTsAnnotations\Tests\Feature;
 
-use Brunoscode\LaravelTsAnnotations\Tests\TestCase;
+use BrunosCode\LaravelTsAnnotations\Tests\TestCase;
 
 class GenerateTypesCommandTest extends TestCase
 {
@@ -10,7 +10,7 @@ class GenerateTypesCommandTest extends TestCase
 
     protected function setUp(): void
     {
-        $this->tmpOutput = sys_get_temp_dir() . '/ts-annotations-cmd-' . uniqid() . '.ts';
+        $this->tmpOutput = sys_get_temp_dir().'/ts-annotations-cmd-'.uniqid().'.ts';
         parent::setUp();
     }
 
@@ -29,11 +29,11 @@ class GenerateTypesCommandTest extends TestCase
     {
         $app['config']->set('ts-annotations', [
             'scan' => [
-                __DIR__ . '/../Fixtures',
+                __DIR__.'/../Fixtures',
             ],
             'outputs' => [
                 'default' => [
-                    'path'    => $this->tmpOutput,
+                    'path' => $this->tmpOutput,
                     'imports' => [
                         "import type { PageProps } from '@inertiajs/core'",
                     ],
@@ -41,7 +41,7 @@ class GenerateTypesCommandTest extends TestCase
             ],
             'markers' => [
                 'start' => '// [ts-annotations:start]',
-                'end'   => '// [ts-annotations:end]',
+                'end' => '// [ts-annotations:end]',
             ],
         ]);
     }
@@ -87,7 +87,7 @@ class GenerateTypesCommandTest extends TestCase
         $content = file_get_contents($this->tmpOutput);
 
         $this->assertStringContainsString(
-            '// --- Brunoscode\\LaravelTsAnnotations\\Tests\\Fixtures\\UserResource ---',
+            '// --- BrunosCode\\LaravelTsAnnotations\\Tests\\Fixtures\\UserResource ---',
             $content,
         );
     }
@@ -140,10 +140,10 @@ class GenerateTypesCommandTest extends TestCase
 
     public function test_skips_output_key_with_no_matching_annotations(): void
     {
-        $reportsPath = sys_get_temp_dir() . '/ts-reports-' . uniqid() . '.ts';
+        $reportsPath = sys_get_temp_dir().'/ts-reports-'.uniqid().'.ts';
 
         $this->app['config']->set('ts-annotations.outputs.reports', [
-            'path'    => $reportsPath,
+            'path' => $reportsPath,
             'imports' => [],
         ]);
 
@@ -155,7 +155,7 @@ class GenerateTypesCommandTest extends TestCase
 
     public function test_warns_and_succeeds_when_no_annotations_found(): void
     {
-        $emptyDir = sys_get_temp_dir() . '/ts-empty-' . uniqid();
+        $emptyDir = sys_get_temp_dir().'/ts-empty-'.uniqid();
         mkdir($emptyDir, 0755, true);
 
         $this->app['config']->set('ts-annotations.scan', [$emptyDir]);
@@ -180,7 +180,7 @@ class GenerateTypesCommandTest extends TestCase
 
     public function test_regenerating_preserves_manual_content_outside_markers(): void
     {
-        $manualContent = <<<TS
+        $manualContent = <<<'TS'
         // My manual import
         import type { CustomType } from './custom'
 

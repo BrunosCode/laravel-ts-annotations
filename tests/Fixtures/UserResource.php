@@ -1,8 +1,8 @@
 <?php
 
-namespace Brunoscode\LaravelTsAnnotations\Tests\Fixtures;
+namespace BrunosCode\LaravelTsAnnotations\Tests\Fixtures;
 
-use Brunoscode\LaravelTsAnnotations\Attributes\TS;
+use BrunosCode\LaravelTsAnnotations\Attributes\TS;
 
 /**
  * A minimal fixture that mimics a Laravel API Resource carrying #[TS] annotations.
@@ -25,6 +25,4 @@ use Brunoscode\LaravelTsAnnotations\Attributes\TS;
         total: number;
     }
     TS, output: 'default')]
-class UserResource
-{
-}
+class UserResource {}

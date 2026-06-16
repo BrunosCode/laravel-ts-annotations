@@ -1,6 +1,6 @@
 <?php
 
-namespace Brunoscode\LaravelTsAnnotations\Attributes;
+namespace BrunosCode\LaravelTsAnnotations\Attributes;
 
 /**
  * Attach raw TypeScript to a PHP class or method.

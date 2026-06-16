@@ -1,17 +1,22 @@
 <?php
 
-namespace Brunoscode\LaravelTsAnnotations\Tests\Fixtures;
+namespace BrunosCode\LaravelTsAnnotations\Tests\Fixtures;
 
-use Brunoscode\LaravelTsAnnotations\Attributes\TSType;
+use BrunosCode\LaravelTsAnnotations\Attributes\TSType;
 
 #[TSType]
 class ProductData
 {
     public int $id;
+
     public string $name;
+
     public float $price;
+
     public bool $inStock;
+
     public ?string $description;
+
     public array $tags;
 
     /** @phpstan-ignore-next-line */

@@ -1,10 +1,10 @@
 <?php
 
-namespace Brunoscode\LaravelTsAnnotations\Parser;
+namespace BrunosCode\LaravelTsAnnotations\Parser;
 
-use Brunoscode\LaravelTsAnnotations\Attributes\TS;
-use Brunoscode\LaravelTsAnnotations\Attributes\TSEnum;
-use Brunoscode\LaravelTsAnnotations\Attributes\TSType;
+use BrunosCode\LaravelTsAnnotations\Attributes\TS;
+use BrunosCode\LaravelTsAnnotations\Attributes\TSEnum;
+use BrunosCode\LaravelTsAnnotations\Attributes\TSType;
 use ReflectionClass;
 use ReflectionEnum;
 use ReflectionEnumBackedCase;
@@ -24,11 +24,10 @@ class AttributeParser
 {
     /**
      * @param  string[]  $fqcns  Fully-qualified class names to inspect.
-     *
      * @return array<string, list<array{class: string, body: string}>>
-     *         Keys are output names ('default', 'admin', …).
-     *         Values are ordered lists of entries to write, each containing
-     *         the source class/method label and the raw TypeScript body.
+     *                                                                 Keys are output names ('default', 'admin', …).
+     *                                                                 Values are ordered lists of entries to write, each containing
+     *                                                                 the source class/method label and the raw TypeScript body.
      */
     public function parse(array $fqcns): array
     {
@@ -74,8 +73,7 @@ class AttributeParser
                 ReflectionMethod::IS_PUBLIC | ReflectionMethod::IS_PROTECTED | ReflectionMethod::IS_PRIVATE,
             );
 
-            usort($methods, fn (ReflectionMethod $a, ReflectionMethod $b)
-                => ($a->getStartLine() ?? 0) <=> ($b->getStartLine() ?? 0));
+            usort($methods, fn (ReflectionMethod $a, ReflectionMethod $b) => ($a->getStartLine() ?? 0) <=> ($b->getStartLine() ?? 0));
 
             foreach ($methods as $method) {
                 // Skip inherited methods — only process methods defined in this class
@@ -85,7 +83,7 @@ class AttributeParser
 
                 $this->collectAttributes(
                     $method->getAttributes(TS::class),
-                    label: $fqcn . '::' . $method->getName() . '()',
+                    label: $fqcn.'::'.$method->getName().'()',
                     result: $result,
                 );
             }
@@ -95,8 +93,7 @@ class AttributeParser
     }
 
     /**
-     * @param  \ReflectionAttribute[]                                          $attributes
-     * @param  string                                                           $label
+     * @param  \ReflectionAttribute[]  $attributes
      * @param  array<string, list<array{class: string, body: string}>>  $result
      */
     private function collectAttributes(array $attributes, string $label, array &$result): void
@@ -111,14 +108,13 @@ class AttributeParser
 
             $result[$ts->output][] = [
                 'class' => $label,
-                'body'  => $ts->body,
+                'body' => $ts->body,
             ];
         }
     }
 
     /**
-     * @param  \ReflectionAttribute[]                                          $attributes
-     * @param  string                                                           $fqcn
+     * @param  \ReflectionAttribute[]  $attributes
      * @param  array<string, list<array{class: string, body: string}>>  $result
      */
     private function collectEnumAttributes(array $attributes, string $fqcn, array &$result): void
@@ -133,16 +129,14 @@ class AttributeParser
 
             $result[$tsEnum->output][] = [
                 'class' => $fqcn,
-                'body'  => $this->generateEnumBody($fqcn),
+                'body' => $this->generateEnumBody($fqcn),
             ];
         }
     }
 
     /**
-     * @param  \ReflectionAttribute[]                                         $attributes
-     * @param  string                                                          $fqcn
-     * @param  ReflectionClass                                                 $reflection
-     * @param  array<string, list<array{class: string, body: string}>> $result
+     * @param  \ReflectionAttribute[]  $attributes
+     * @param  array<string, list<array{class: string, body: string}>>  $result
      */
     private function collectTypeAttributes(
         array $attributes,
@@ -160,16 +154,16 @@ class AttributeParser
 
             $result[$tsType->output][] = [
                 'class' => $fqcn,
-                'body'  => $this->generateTypeBody($fqcn, $reflection, $tsType->name),
+                'body' => $this->generateTypeBody($fqcn, $reflection, $tsType->name),
             ];
         }
     }
 
     private function generateTypeBody(string $fqcn, ReflectionClass $reflection, ?string $tsName): string
     {
-        $name   = $tsName ?? $reflection->getShortName();
-        $mapper = new PhpToTsTypeMapper();
-        $lines  = ["export type {$name} = {"];
+        $name = $tsName ?? $reflection->getShortName();
+        $mapper = new PhpToTsTypeMapper;
+        $lines = ["export type {$name} = {"];
 
         $properties = array_filter(
             $reflection->getProperties(ReflectionProperty::IS_PUBLIC),
@@ -179,8 +173,8 @@ class AttributeParser
 
         foreach ($properties as $property) {
             $readonly = $property->isReadOnly() ? 'readonly ' : '';
-            $type     = $property->getType();
-            $tsType   = $type !== null ? $mapper->map($type) : 'unknown';
+            $type = $property->getType();
+            $tsType = $type !== null ? $mapper->map($type) : 'unknown';
 
             $lines[] = "    {$readonly}{$property->getName()}: {$tsType};";
         }
@@ -193,12 +187,12 @@ class AttributeParser
     private function generateEnumBody(string $fqcn): string
     {
         $enumReflection = new ReflectionEnum($fqcn);
-        $shortName      = $enumReflection->getShortName();
-        $lines          = ["export enum {$shortName} {"];
+        $shortName = $enumReflection->getShortName();
+        $lines = ["export enum {$shortName} {"];
 
         foreach ($enumReflection->getCases() as $case) {
             if ($case instanceof ReflectionEnumBackedCase) {
-                $value     = $case->getBackingValue();
+                $value = $case->getBackingValue();
                 $formatted = is_string($value) ? "'{$value}'" : $value;
             } else {
                 // Unit enum: no backing type — use case name as string value

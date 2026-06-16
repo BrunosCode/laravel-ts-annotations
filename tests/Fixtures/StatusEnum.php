@@ -1,13 +1,13 @@
 <?php
 
-namespace Brunoscode\LaravelTsAnnotations\Tests\Fixtures;
+namespace BrunosCode\LaravelTsAnnotations\Tests\Fixtures;
 
-use Brunoscode\LaravelTsAnnotations\Attributes\TSEnum;
+use BrunosCode\LaravelTsAnnotations\Attributes\TSEnum;
 
 #[TSEnum]
 enum StatusEnum: string
 {
-    case Active   = 'active';
+    case Active = 'active';
     case Inactive = 'inactive';
-    case Pending  = 'pending';
+    case Pending = 'pending';
 }

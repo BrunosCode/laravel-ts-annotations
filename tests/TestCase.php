@@ -1,8 +1,8 @@
 <?php
 
-namespace Brunoscode\LaravelTsAnnotations\Tests;
+namespace BrunosCode\LaravelTsAnnotations\Tests;
 
-use Brunoscode\LaravelTsAnnotations\TsAnnotationsServiceProvider;
+use BrunosCode\LaravelTsAnnotations\TsAnnotationsServiceProvider;
 use Orchestra\Testbench\TestCase as OrchestraTestCase;
 
 abstract class TestCase extends OrchestraTestCase

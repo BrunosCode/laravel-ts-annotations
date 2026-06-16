@@ -1,13 +1,13 @@
 <?php
 
-namespace Brunoscode\LaravelTsAnnotations\Tests\Unit;
+namespace BrunosCode\LaravelTsAnnotations\Tests\Unit;
 
-use Brunoscode\LaravelTsAnnotations\Attributes\TSType;
-use Brunoscode\LaravelTsAnnotations\Parser\AttributeParser;
-use Brunoscode\LaravelTsAnnotations\Tests\Fixtures\ProductData;
-use Brunoscode\LaravelTsAnnotations\Tests\Fixtures\UserData;
-use Brunoscode\LaravelTsAnnotations\Tests\Fixtures\UserDataChild;
-use Brunoscode\LaravelTsAnnotations\Tests\TestCase;
+use BrunosCode\LaravelTsAnnotations\Attributes\TSType;
+use BrunosCode\LaravelTsAnnotations\Parser\AttributeParser;
+use BrunosCode\LaravelTsAnnotations\Tests\Fixtures\ProductData;
+use BrunosCode\LaravelTsAnnotations\Tests\Fixtures\UserData;
+use BrunosCode\LaravelTsAnnotations\Tests\Fixtures\UserDataChild;
+use BrunosCode\LaravelTsAnnotations\Tests\TestCase;
 
 class TSTypeParserTest extends TestCase
 {
@@ -16,7 +16,7 @@ class TSTypeParserTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->parser = new AttributeParser();
+        $this->parser = new AttributeParser;
     }
 
     // ── Basic collection ──────────────────────────────────────────────────────
@@ -41,7 +41,7 @@ class TSTypeParserTest extends TestCase
     public function test_generates_export_type_alias(): void
     {
         $result = $this->parser->parse([UserData::class]);
-        $body   = $result['default'][0]['body'];
+        $body = $result['default'][0]['body'];
 
         $this->assertStringContainsString('export type UserData = {', $body);
         $this->assertStringEndsWith('}', $body);
@@ -50,7 +50,7 @@ class TSTypeParserTest extends TestCase
     public function test_promoted_constructor_params_are_included(): void
     {
         $result = $this->parser->parse([UserData::class]);
-        $body   = $result['default'][0]['body'];
+        $body = $result['default'][0]['body'];
 
         $this->assertStringContainsString('id:', $body);
         $this->assertStringContainsString('name:', $body);
@@ -63,7 +63,7 @@ class TSTypeParserTest extends TestCase
     public function test_int_maps_to_number(): void
     {
         $result = $this->parser->parse([UserData::class]);
-        $body   = $result['default'][0]['body'];
+        $body = $result['default'][0]['body'];
 
         $this->assertStringContainsString('id: number;', $body);
     }
@@ -71,7 +71,7 @@ class TSTypeParserTest extends TestCase
     public function test_string_maps_to_string(): void
     {
         $result = $this->parser->parse([UserData::class]);
-        $body   = $result['default'][0]['body'];
+        $body = $result['default'][0]['body'];
 
         $this->assertStringContainsString('name: string;', $body);
     }
@@ -79,7 +79,7 @@ class TSTypeParserTest extends TestCase
     public function test_bool_maps_to_boolean(): void
     {
         $result = $this->parser->parse([UserData::class]);
-        $body   = $result['default'][0]['body'];
+        $body = $result['default'][0]['body'];
 
         $this->assertStringContainsString('active: boolean;', $body);
     }
@@ -87,7 +87,7 @@ class TSTypeParserTest extends TestCase
     public function test_nullable_string_maps_to_string_or_null(): void
     {
         $result = $this->parser->parse([UserData::class]);
-        $body   = $result['default'][0]['body'];
+        $body = $result['default'][0]['body'];
 
         $this->assertStringContainsString('email: string | null;', $body);
     }
@@ -95,7 +95,7 @@ class TSTypeParserTest extends TestCase
     public function test_float_maps_to_number(): void
     {
         $result = $this->parser->parse([ProductData::class]);
-        $body   = $result['default'][0]['body'];
+        $body = $result['default'][0]['body'];
 
         $this->assertStringContainsString('price: number;', $body);
     }
@@ -103,7 +103,7 @@ class TSTypeParserTest extends TestCase
     public function test_array_maps_to_unknown_array(): void
     {
         $result = $this->parser->parse([ProductData::class]);
-        $body   = $result['default'][0]['body'];
+        $body = $result['default'][0]['body'];
 
         $this->assertStringContainsString('tags: unknown[];', $body);
     }
@@ -113,7 +113,7 @@ class TSTypeParserTest extends TestCase
     public function test_readonly_property_gets_readonly_modifier(): void
     {
         $result = $this->parser->parse([UserData::class]);
-        $body   = $result['default'][0]['body'];
+        $body = $result['default'][0]['body'];
 
         $this->assertStringContainsString('readonly id: number;', $body);
         $this->assertStringContainsString('readonly name: string;', $body);
@@ -123,7 +123,7 @@ class TSTypeParserTest extends TestCase
     public function test_non_readonly_property_has_no_readonly_modifier(): void
     {
         $result = $this->parser->parse([ProductData::class]);
-        $body   = $result['default'][0]['body'];
+        $body = $result['default'][0]['body'];
 
         $this->assertStringNotContainsString('readonly id:', $body);
     }
@@ -133,7 +133,7 @@ class TSTypeParserTest extends TestCase
     public function test_static_properties_are_excluded(): void
     {
         $result = $this->parser->parse([ProductData::class]);
-        $body   = $result['default'][0]['body'];
+        $body = $result['default'][0]['body'];
 
         $this->assertStringNotContainsString('ignored', $body);
     }
@@ -148,11 +148,14 @@ class TSTypeParserTest extends TestCase
 
     public function test_custom_name_appears_in_generated_body(): void
     {
-        $obj  = new #[TSType(name: 'IProduct')] class { public int $id; };
+        $obj = new #[TSType(name: 'IProduct')] class
+        {
+            public int $id;
+        };
         $fqcn = get_class($obj);
 
         $result = $this->parser->parse([$fqcn]);
-        $body   = $result['default'][0]['body'];
+        $body = $result['default'][0]['body'];
 
         $this->assertStringContainsString('export type IProduct = {', $body);
         $this->assertStringNotContainsString('export type class@', $body);
@@ -163,7 +166,7 @@ class TSTypeParserTest extends TestCase
     public function test_inherited_properties_are_not_included(): void
     {
         $result = $this->parser->parse([UserDataChild::class]);
-        $body   = $result['default'][0]['body'];
+        $body = $result['default'][0]['body'];
 
         // Only the child's own property
         $this->assertStringContainsString('childOnly: string;', $body);
@@ -179,11 +182,14 @@ class TSTypeParserTest extends TestCase
 
     public function test_untyped_property_maps_to_unknown(): void
     {
-        $obj  = new #[TSType] class { public $untyped; };
+        $obj = new #[TSType] class
+        {
+            public $untyped;
+        };
         $fqcn = get_class($obj);
 
         $result = $this->parser->parse([$fqcn]);
-        $body   = $result['default'][0]['body'];
+        $body = $result['default'][0]['body'];
 
         $this->assertStringContainsString('untyped: unknown;', $body);
     }
@@ -192,11 +198,14 @@ class TSTypeParserTest extends TestCase
 
     public function test_union_type_property_maps_correctly(): void
     {
-        $obj  = new #[TSType] class { public int|string $value; };
+        $obj = new #[TSType] class
+        {
+            public int|string $value;
+        };
         $fqcn = get_class($obj);
 
         $result = $this->parser->parse([$fqcn]);
-        $body   = $result['default'][0]['body'];
+        $body = $result['default'][0]['body'];
 
         // PHP may reorder union type members — assert both parts present
         $this->assertStringContainsString('value:', $body);
@@ -209,11 +218,11 @@ class TSTypeParserTest extends TestCase
 
     public function test_class_with_no_properties_produces_empty_type_body(): void
     {
-        $obj  = new #[TSType] class {};
+        $obj = new #[TSType] class {};
         $fqcn = get_class($obj);
 
         $result = $this->parser->parse([$fqcn]);
-        $body   = $result['default'][0]['body'];
+        $body = $result['default'][0]['body'];
 
         $this->assertStringContainsString('export type', $body);
         $this->assertStringContainsString('{', $body);
@@ -225,7 +234,10 @@ class TSTypeParserTest extends TestCase
 
     public function test_custom_output_key_routes_correctly(): void
     {
-        $obj  = new #[TSType(output: 'admin')] class { public int $id; };
+        $obj = new #[TSType(output: 'admin')] class
+        {
+            public int $id;
+        };
         $fqcn = get_class($obj);
 
         $result = $this->parser->parse([$fqcn]);

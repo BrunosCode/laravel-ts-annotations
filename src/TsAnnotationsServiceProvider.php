@@ -1,11 +1,11 @@
 <?php
 
-namespace Brunoscode\LaravelTsAnnotations;
+namespace BrunosCode\LaravelTsAnnotations;
 
-use Brunoscode\LaravelTsAnnotations\Commands\GenerateTypesCommand;
-use Brunoscode\LaravelTsAnnotations\Parser\AttributeParser;
-use Brunoscode\LaravelTsAnnotations\Scanner\PhpFileScanner;
-use Brunoscode\LaravelTsAnnotations\Writer\TypeScriptFileWriter;
+use BrunosCode\LaravelTsAnnotations\Commands\GenerateTypesCommand;
+use BrunosCode\LaravelTsAnnotations\Parser\AttributeParser;
+use BrunosCode\LaravelTsAnnotations\Scanner\PhpFileScanner;
+use BrunosCode\LaravelTsAnnotations\Writer\TypeScriptFileWriter;
 use Illuminate\Support\ServiceProvider;
 
 class TsAnnotationsServiceProvider extends ServiceProvider
@@ -13,7 +13,7 @@ class TsAnnotationsServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->mergeConfigFrom(
-            __DIR__ . '/../config/ts-annotations.php',
+            __DIR__.'/../config/ts-annotations.php',
             'ts-annotations',
         );
 
@@ -26,7 +26,7 @@ class TsAnnotationsServiceProvider extends ServiceProvider
 
             return new TypeScriptFileWriter(
                 startMarker: $markers['start'] ?? '// [ts-annotations:start]',
-                endMarker:   $markers['end']   ?? '// [ts-annotations:end]',
+                endMarker: $markers['end'] ?? '// [ts-annotations:end]',
             );
         });
     }
@@ -35,7 +35,7 @@ class TsAnnotationsServiceProvider extends ServiceProvider
     {
         if ($this->app->runningInConsole()) {
             $this->publishes([
-                __DIR__ . '/../config/ts-annotations.php' => config_path('ts-annotations.php'),
+                __DIR__.'/../config/ts-annotations.php' => config_path('ts-annotations.php'),
             ], 'ts-annotations-config');
 
             $this->commands([

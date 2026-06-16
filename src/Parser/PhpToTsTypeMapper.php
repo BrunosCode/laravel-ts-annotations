@@ -1,6 +1,6 @@
 <?php
 
-namespace Brunoscode\LaravelTsAnnotations\Parser;
+namespace BrunosCode\LaravelTsAnnotations\Parser;
 
 use ReflectionIntersectionType;
 use ReflectionNamedType;
@@ -15,28 +15,28 @@ class PhpToTsTypeMapper
     /** @var array<string, string> */
     private const SCALARS = [
         'string' => 'string',
-        'int'    => 'number',
-        'float'  => 'number',
+        'int' => 'number',
+        'float' => 'number',
         'double' => 'number',
-        'bool'   => 'boolean',
-        'true'   => 'true',
-        'false'  => 'false',
-        'null'   => 'null',
-        'array'  => 'unknown[]',
-        'mixed'  => 'any',
+        'bool' => 'boolean',
+        'true' => 'true',
+        'false' => 'false',
+        'null' => 'null',
+        'array' => 'unknown[]',
+        'mixed' => 'any',
         'object' => 'object',
-        'void'   => 'void',
-        'never'  => 'never',
-        'self'   => 'this',
+        'void' => 'void',
+        'never' => 'never',
+        'self' => 'this',
         'static' => 'this',
     ];
 
     /** @var array<string, string> */
     private const CLASS_OVERRIDES = [
-        'Carbon\\Carbon'                              => 'string',
-        'Carbon\\CarbonImmutable'                    => 'string',
-        'Illuminate\\Support\\Carbon'                => 'string',
-        'Illuminate\\Support\\Collection'            => 'unknown[]',
+        'Carbon\\Carbon' => 'string',
+        'Carbon\\CarbonImmutable' => 'string',
+        'Illuminate\\Support\\Carbon' => 'string',
+        'Illuminate\\Support\\Collection' => 'unknown[]',
         'Illuminate\\Database\\Eloquent\\Collection' => 'unknown[]',
     ];
 
@@ -67,7 +67,7 @@ class PhpToTsTypeMapper
 
         // ?T shorthand → T | null (not applied when the type is already null/mixed)
         if ($type->allowsNull() && $name !== 'null' && $name !== 'mixed') {
-            return $tsType . ' | null';
+            return $tsType.' | null';
         }
 
         return $tsType;

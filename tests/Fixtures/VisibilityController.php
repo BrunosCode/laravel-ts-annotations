@@ -1,8 +1,8 @@
 <?php
 
-namespace Brunoscode\LaravelTsAnnotations\Tests\Fixtures;
+namespace BrunosCode\LaravelTsAnnotations\Tests\Fixtures;
 
-use Brunoscode\LaravelTsAnnotations\Attributes\TS;
+use BrunosCode\LaravelTsAnnotations\Attributes\TS;
 
 /**
  * Fixture that verifies #[TS] is collected regardless of method visibility.

@@ -1,12 +1,12 @@
 <?php
 
-namespace Brunoscode\LaravelTsAnnotations\Tests\Fixtures;
+namespace BrunosCode\LaravelTsAnnotations\Tests\Fixtures;
 
-use Brunoscode\LaravelTsAnnotations\Attributes\TSEnum;
+use BrunosCode\LaravelTsAnnotations\Attributes\TSEnum;
 
 #[TSEnum(output: 'admin')]
 enum AdminStatusEnum: string
 {
-    case Active    = 'active';
+    case Active = 'active';
     case Suspended = 'suspended';
 }

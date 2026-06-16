@@ -1,20 +1,57 @@
-# laravel-ts-annotations
+# Laravel TS Annotations
 
-Generate TypeScript types from PHP attributes with a single Artisan command. Three annotation styles — raw TypeScript, auto-inferred from class properties, and auto-inferred from enums — cover every common case.
+> Generate TypeScript types from PHP attributes and emit them to `.ts` files with a single Artisan command — for Laravel apps with a typed frontend.
 
-## Laravel Boost
+[![Latest Version on Packagist](https://img.shields.io/packagist/v/brunoscode/laravel-ts-annotations.svg?style=flat-square)](https://packagist.org/packages/brunoscode/laravel-ts-annotations)
+[![GitHub Tests Action Status](https://img.shields.io/github/actions/workflow/status/BrunosCode/LaravelTsAnnotations/tests.yml?branch=main&label=tests&style=flat-square)](https://github.com/BrunosCode/LaravelTsAnnotations/actions?query=workflow%3Atests+branch%3Amain)
+[![GitHub Code Style Action Status](https://img.shields.io/github/actions/workflow/status/BrunosCode/LaravelTsAnnotations/fix-php-code-style-issues.yml?branch=main&label=code%20style&style=flat-square)](https://github.com/BrunosCode/LaravelTsAnnotations/actions?query=workflow%3A"Fix+PHP+code+style+issues"+branch%3Amain)
+[![Total Downloads](https://img.shields.io/packagist/dt/brunoscode/laravel-ts-annotations.svg?style=flat-square)](https://packagist.org/packages/brunoscode/laravel-ts-annotations)
+[![License](https://img.shields.io/packagist/l/brunoscode/laravel-ts-annotations.svg?style=flat-square)](LICENSE.md)
 
-This package ships a [Laravel Boost](https://laravel.com/docs/boost) skill. If you use Boost, run:
+Keeping PHP and a typed frontend in sync usually means one of two compromises: **infer** TypeScript from PHP types (and lose union types, template literals, and generics), or route everything through a Swagger/OpenAPI intermediary (indirect and verbose). This package skips both — you attach the TypeScript you want, in PHP, and generate `.ts` with one command. Three annotation styles give you three levels of control:
+
+- `#[TS]` — write **real TypeScript** verbatim when you need unions, templates, or generics
+- `#[TSType]` — **auto-infer** from PHP property types for simple DTOs and data classes
+- `#[TSEnum]` — **auto-generate** TypeScript enums from PHP backed or unit enums
+
+## Table of Contents
+
+- [Requirements](#requirements)
+- [Installation](#installation)
+- [Quick Start](#quick-start)
+- [Usage](#usage)
+- [Resources, Collections, and Inertia](#resources-collections-and-inertia)
+- [Ordering in the Output File](#ordering-in-the-output-file)
+- [File Preservation](#file-preservation)
+- [Laravel Boost](#laravel-boost)
+- [Configuration](#configuration)
+- [Roadmap](#roadmap)
+- [Testing](#testing)
+- [Changelog](#changelog)
+- [Credits](#credits)
+- [Contributing](#contributing)
+- [License](#license)
+
+## Requirements
+
+| Laravel | PHP |
+|---------|-----|
+| 13.x | 8.3, 8.4, 8.5 |
+| 12.x | 8.2, 8.3, 8.4, 8.5 |
+
+## Installation
 
 ```bash
-php artisan boost:install
+composer require brunoscode/laravel-ts-annotations
 ```
 
-and select `brunoscode/laravel-ts-annotations` when prompted. The skill teaches your AI agent how to use `#[TS]`, `#[TSType]`, and `#[TSEnum]` attributes, run `ts:generate`, and manage the generated output.
+Publish the config file:
 
----
+```bash
+php artisan vendor:publish --tag=ts-annotations-config
+```
 
-## Quick start
+## Quick Start
 
 ```php
 // Raw TypeScript — full control
@@ -79,96 +116,6 @@ export enum Status {
 // [ts-annotations:end]
 ```
 
----
-
-## Why this package?
-
-Most solutions either **infer** TypeScript from PHP types (losing union types, template literals, generics) or go through a Swagger/OpenAPI intermediary (indirect and verbose). This package gives you three levels of control:
-
-- `#[TS]` — write **real TypeScript** verbatim when you need unions, templates, or generics
-- `#[TSType]` — **auto-infer** from PHP property types for simple DTOs and data classes
-- `#[TSEnum]` — **auto-generate** TypeScript enums from PHP backed or unit enums
-
----
-
-## Requirements
-
-- PHP 8.1+
-- Laravel 10, 11, 12, or 13
-
----
-
-## Installation
-
-```bash
-composer require brunoscode/laravel-ts-annotations
-```
-
-Publish the config file:
-
-```bash
-php artisan vendor:publish --tag=ts-annotations-config
-```
-
----
-
-## Configuration
-
-```php
-// config/ts-annotations.php
-
-return [
-
-    // Directories scanned recursively for all annotation types.
-    'scan' => [
-        app_path('Http'),       // covers Resources, Controllers, Requests, Middleware
-        app_path('Data'),       // DTOs annotated with #[TSType]
-        app_path('Enums'),      // enums annotated with #[TSEnum]
-    ],
-
-    // Output .ts files. The array key is referenced in the `output` param.
-    'outputs' => [
-        'default' => [
-            'path'    => resource_path('js/types/generated.ts'),
-            // Lines written verbatim at the top of the generated section on every run.
-            // Useful for shared generics like CollectionResource / PaginatedResource.
-            'imports' => [
-                'export type CollectionResource<T> = { data: T[] };',
-                '',
-                'export type PaginatedResource<T> = {',
-                '    data: T[];',
-                '    total: number;',
-                '    per_page: number;',
-                '    current_page: number;',
-                '    last_page: number;',
-                '    from: number | null;',
-                '    to: number | null;',
-                '    first_page_url: string;',
-                '    last_page_url: string;',
-                '    next_page_url: string | null;',
-                '    prev_page_url: string | null;',
-                '    path: string;',
-                '};',
-            ],
-        ],
-        // 'admin' => [
-        //     'path'    => resource_path('js/types/admin.ts'),
-        //     'imports' => [],
-        // ],
-    ],
-
-    // Comment markers that delimit the generated section.
-    // Everything outside the markers is preserved on re-generation.
-    'markers' => [
-        'start' => '// [ts-annotations:start]',
-        'end'   => '// [ts-annotations:end]',
-    ],
-
-];
-```
-
----
-
 ## Usage
 
 ### `#[TS]` — raw TypeScript
@@ -178,7 +125,7 @@ Write any TypeScript verbatim. Use this when you need union types, template lite
 Usable on classes and on individual methods. `#[TS]` is repeatable — stack it as many times as needed.
 
 ```php
-use Brunoscode\LaravelTsAnnotations\Attributes\TS;
+use BrunosCode\LaravelTsAnnotations\Attributes\TS;
 
 #[TS(<<<'TS'
     export type UserResponse = {
@@ -216,14 +163,14 @@ class UserController extends Controller
 
 > **Heredoc indentation:** Place the closing `TS` marker at the same indentation level as the type body. PHP strips that many leading spaces from every line, giving zero-based indentation in the output.
 
----
-
 ### `#[TSType]` — auto-infer from class properties
 
 Inspects all public non-static properties (including promoted constructor params) via Reflection and maps PHP types to TypeScript. The `readonly` modifier is preserved.
 
+Only properties **declared on the class itself** are emitted — properties inherited from a parent class are skipped. Annotate the parent with `#[TSType]` too if you need its properties in a separate type.
+
 ```php
-use Brunoscode\LaravelTsAnnotations\Attributes\TSType;
+use BrunosCode\LaravelTsAnnotations\Attributes\TSType;
 
 #[TSType]
 class OrderData
@@ -261,9 +208,15 @@ PHP → TypeScript type mapping:
 | `T\|U` | `T \| U` |
 | `array` | `unknown[]` |
 | `mixed` | `any` |
-| `Carbon\Carbon` | `string` |
-| `Collection` | `unknown[]` |
-| Other class | short class name |
+| `object` | `object` |
+| `void`, `never` | `void`, `never` |
+| `self`, `static` | `this` |
+| `T & U` (intersection) | `T & U` |
+| `Carbon\Carbon`, `CarbonImmutable`, `Illuminate\Support\Carbon` | `string` |
+| `Illuminate\Support\Collection`, Eloquent `Collection` | `unknown[]` |
+| Any other class | short class name |
+
+Only the exact Carbon/Collection FQCNs above are remapped. A different class named `Collection` (e.g. your own `App\Support\Collection`) falls through to the short-name rule and becomes the literal `Collection`, **not** `unknown[]`.
 
 Use the optional `name` parameter to override the TypeScript identifier:
 
@@ -273,14 +226,12 @@ class OrderData { ... }
 // → export type IOrder = { ... }
 ```
 
----
-
 ### `#[TSEnum]` — auto-generate from PHP enums
 
 Reads enum cases and their backing values automatically. No body to write.
 
 ```php
-use Brunoscode\LaravelTsAnnotations\Attributes\TSEnum;
+use BrunosCode\LaravelTsAnnotations\Attributes\TSEnum;
 
 // String-backed
 #[TSEnum]
@@ -314,8 +265,6 @@ enum Direction
 // → export enum Direction { North = 'North', South = 'South', East = 'East', West = 'West', }
 ```
 
----
-
 ### Targeting a specific output file
 
 All three annotations accept an `output` parameter:
@@ -334,8 +283,6 @@ enum AdminRole: string { ... }
 
 The key must match one defined in `config/ts-annotations.php`.
 
----
-
 ### Run the generator
 
 ```bash
@@ -349,16 +296,14 @@ php artisan ts:generate --output=admin
 php artisan ts:generate --dry-run
 ```
 
----
-
-## Resources, collections, and Inertia
+## Resources, Collections, and Inertia
 
 Laravel Resources give you explicit control over the shape of data sent to the frontend — they transform Eloquent models rather than leaking raw attributes. Annotating them with `#[TS]` keeps that contract in sync with your TypeScript automatically.
 
 ### 1. Define the resource shape
 
 ```php
-use Brunoscode\LaravelTsAnnotations\Attributes\TS;
+use BrunosCode\LaravelTsAnnotations\Attributes\TS;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 #[TS(<<<'TS'
@@ -407,7 +352,7 @@ export type PaginatedResource<T> = {
 Reference them directly in the `#[TS]` attribute on each controller method that renders an Inertia page:
 
 ```php
-use Brunoscode\LaravelTsAnnotations\Attributes\TS;
+use BrunosCode\LaravelTsAnnotations\Attributes\TS;
 use Inertia\Inertia;
 
 class UserController extends Controller
@@ -502,16 +447,16 @@ const props = defineProps<UserShowProps>()
 
 > `CollectionResource<T>` and `PaginatedResource<T>` are injected via the `imports` key in `config/ts-annotations.php`. Customise them there or add any other shared helpers your app needs.
 
----
+## Ordering in the Output File
 
-## Ordering in the output file
+Entries follow **file-scan order across classes**. Within a single class they are emitted in this fixed order:
 
-Within each output file, entries are written in this order:
+1. Class-level `#[TS]` attributes
+2. `#[TSEnum]` (only on enums)
+3. `#[TSType]` (inferred from the class)
+4. Method-level `#[TS]` attributes, sorted by line number
 
-1. Class-level `#[TS]` attributes, in file-scan order
-2. `#[TSEnum]` entries, in file-scan order
-3. `#[TSType]` entries, in file-scan order
-4. Method-level `#[TS]` attributes, sorted by line number within each class
+There is **no** global grouping by attribute type. A `#[TSEnum]` in a class that is scanned before a `#[TS]` resource appears first in the output. The result looks grouped only when your `scan` paths are themselves ordered by kind (e.g. `Http`, then `Enum`, then `Data`) — that grouping comes from scan order, not from an intrinsic sort.
 
 Each entry is preceded by a source comment:
 
@@ -526,9 +471,7 @@ export enum Status { ... }
 export type UserData = { ... }
 ```
 
----
-
-## File preservation
+## File Preservation
 
 The generator only touches the section between the two marker comments. Everything outside the markers — manual imports, custom types, hand-written utilities — is left untouched on every run.
 
@@ -550,23 +493,96 @@ export type LocalState = 'idle' | 'loading' | 'error'
 
 If a file doesn't exist yet, it is created from scratch. If it exists but has no markers, the generated block is appended at the end.
 
----
+## Laravel Boost
+
+This package ships a [Laravel Boost](https://laravel.com/docs/boost) skill. If you use Boost, run:
+
+```bash
+php artisan boost:install
+```
+
+and select `brunoscode/laravel-ts-annotations` when prompted. The skill teaches your AI agent how to use `#[TS]`, `#[TSType]`, and `#[TSEnum]` attributes, run `ts:generate`, and manage the generated output.
+
+## Configuration
+
+```php
+// config/ts-annotations.php
+
+return [
+
+    // Directories scanned recursively for all annotation types.
+    'scan' => [
+        app_path('Http'),       // covers Resources, Controllers, Requests, Middleware
+        app_path('Enum'),       // enums annotated with #[TSEnum]
+        app_path('Data'),       // DTOs annotated with #[TSType]
+    ],
+
+    // Output .ts files. The array key is referenced in the `output` param.
+    'outputs' => [
+        'default' => [
+            'path'    => resource_path('js/types/generated.ts'),
+            // Lines written verbatim at the top of the generated section on every run.
+            // Useful for shared generics like CollectionResource / PaginatedResource.
+            'imports' => [
+                'export type CollectionResource<T> = { data: T[] };',
+                '',
+                'export type PaginatedResource<T> = {',
+                '    data: T[];',
+                '    total: number;',
+                '    per_page: number;',
+                '    current_page: number;',
+                '    last_page: number;',
+                '    from: number | null;',
+                '    to: number | null;',
+                '    first_page_url: string;',
+                '    last_page_url: string;',
+                '    next_page_url: string | null;',
+                '    prev_page_url: string | null;',
+                '    path: string;',
+                '};',
+            ],
+        ],
+        // 'admin' => [
+        //     'path'    => resource_path('js/types/admin.ts'),
+        //     'imports' => [],
+        // ],
+    ],
+
+    // Comment markers that delimit the generated section.
+    // Everything outside the markers is preserved on re-generation.
+    'markers' => [
+        'start' => '// [ts-annotations:start]',
+        'end'   => '// [ts-annotations:end]',
+    ],
+
+];
+```
 
 ## Roadmap
 
-- [ ] `--watch` flag for automatic regeneration on file change
+Planned, not yet shipped:
 
----
+- `--watch` flag for automatic regeneration on file change
 
 ## Testing
 
 ```bash
-composer install
-vendor/bin/phpunit
+composer test
 ```
 
----
+## Changelog
+
+Please see [CHANGELOG.md](CHANGELOG.md) for what has changed recently.
+
+## Credits
+
+- [BrunosCode](https://github.com/BrunosCode)
+- [All Contributors](https://github.com/BrunosCode/LaravelTsAnnotations/graphs/contributors)
+
+## Contributing
+
+Contributions are welcome! Please submit a pull request or open an issue to discuss what you would like to change.
 
 ## License
 
-MIT — see [LICENSE](LICENSE).
+The MIT License (MIT). Please see [License File](LICENSE.md) for more information.
