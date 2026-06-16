@@ -3,7 +3,7 @@
 > Generate TypeScript types from PHP attributes and emit them to `.ts` files with a single Artisan command — for Laravel apps with a typed frontend.
 
 [![Latest Version on Packagist](https://img.shields.io/packagist/v/brunoscode/laravel-ts-annotations.svg?style=flat-square)](https://packagist.org/packages/brunoscode/laravel-ts-annotations)
-[![GitHub Tests Action Status](https://img.shields.io/github/actions/workflow/status/brunoscode/laravel-ts-annotations/tests.yml?branch=main&label=tests&style=flat-square)](https://github.com/BrunosCode/laravel-ts-annotations/actions?query=workflow%3Atests+branch%3Amain)
+[![GitHub Tests Action Status](https://img.shields.io/github/actions/workflow/status/BrunosCode/LaravelTsAnnotations/tests.yml?branch=main&label=tests&style=flat-square)](https://github.com/BrunosCode/LaravelTsAnnotations/actions?query=workflow%3Atests+branch%3Amain)
 [![Total Downloads](https://img.shields.io/packagist/dt/brunoscode/laravel-ts-annotations.svg?style=flat-square)](https://packagist.org/packages/brunoscode/laravel-ts-annotations)
 [![License](https://img.shields.io/packagist/l/brunoscode/laravel-ts-annotations.svg?style=flat-square)](LICENSE.md)
 
@@ -578,7 +578,7 @@ Please see [CHANGELOG.md](CHANGELOG.md) for what has changed recently.
 ## Credits
 
 - [BrunosCode](https://github.com/BrunosCode)
-- [All Contributors](https://github.com/BrunosCode/laravel-ts-annotations/graphs/contributors)
+- [All Contributors](https://github.com/BrunosCode/LaravelTsAnnotations/graphs/contributors)
 
 ## Contributing
 
