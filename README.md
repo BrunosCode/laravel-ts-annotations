@@ -38,8 +38,6 @@ Keeping PHP and a typed frontend in sync usually means one of two compromises: *
 |---------|-----|
 | 13.x | 8.3, 8.4, 8.5 |
 | 12.x | 8.2, 8.3, 8.4, 8.5 |
-| 11.x | 8.2, 8.3, 8.4, 8.5 |
-| 10.x | 8.1, 8.2, 8.3, 8.4, 8.5 |
 
 ## Installation
 
