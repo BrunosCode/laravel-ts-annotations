@@ -1,6 +1,6 @@
 <?php
 
-namespace Brunoscode\LaravelTsAnnotations\Parser;
+namespace BrunosCode\LaravelTsAnnotations\Parser;
 
 use ReflectionIntersectionType;
 use ReflectionNamedType;

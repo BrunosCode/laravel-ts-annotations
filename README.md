@@ -126,7 +126,7 @@ Write any TypeScript verbatim. Use this when you need union types, template lite
 Usable on classes and on individual methods. `#[TS]` is repeatable — stack it as many times as needed.
 
 ```php
-use Brunoscode\LaravelTsAnnotations\Attributes\TS;
+use BrunosCode\LaravelTsAnnotations\Attributes\TS;
 
 #[TS(<<<'TS'
     export type UserResponse = {
@@ -171,7 +171,7 @@ Inspects all public non-static properties (including promoted constructor params
 Only properties **declared on the class itself** are emitted — properties inherited from a parent class are skipped. Annotate the parent with `#[TSType]` too if you need its properties in a separate type.
 
 ```php
-use Brunoscode\LaravelTsAnnotations\Attributes\TSType;
+use BrunosCode\LaravelTsAnnotations\Attributes\TSType;
 
 #[TSType]
 class OrderData
@@ -232,7 +232,7 @@ class OrderData { ... }
 Reads enum cases and their backing values automatically. No body to write.
 
 ```php
-use Brunoscode\LaravelTsAnnotations\Attributes\TSEnum;
+use BrunosCode\LaravelTsAnnotations\Attributes\TSEnum;
 
 // String-backed
 #[TSEnum]
@@ -304,7 +304,7 @@ Laravel Resources give you explicit control over the shape of data sent to the f
 ### 1. Define the resource shape
 
 ```php
-use Brunoscode\LaravelTsAnnotations\Attributes\TS;
+use BrunosCode\LaravelTsAnnotations\Attributes\TS;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 #[TS(<<<'TS'
@@ -353,7 +353,7 @@ export type PaginatedResource<T> = {
 Reference them directly in the `#[TS]` attribute on each controller method that renders an Inertia page:
 
 ```php
-use Brunoscode\LaravelTsAnnotations\Attributes\TS;
+use BrunosCode\LaravelTsAnnotations\Attributes\TS;
 use Inertia\Inertia;
 
 class UserController extends Controller

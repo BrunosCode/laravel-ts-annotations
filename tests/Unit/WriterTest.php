@@ -1,9 +1,9 @@
 <?php
 
-namespace Brunoscode\LaravelTsAnnotations\Tests\Unit;
+namespace BrunosCode\LaravelTsAnnotations\Tests\Unit;
 
-use Brunoscode\LaravelTsAnnotations\Tests\TestCase;
-use Brunoscode\LaravelTsAnnotations\Writer\TypeScriptFileWriter;
+use BrunosCode\LaravelTsAnnotations\Tests\TestCase;
+use BrunosCode\LaravelTsAnnotations\Writer\TypeScriptFileWriter;
 
 class WriterTest extends TestCase
 {

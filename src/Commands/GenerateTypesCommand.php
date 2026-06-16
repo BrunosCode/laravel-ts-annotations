@@ -1,10 +1,10 @@
 <?php
 
-namespace Brunoscode\LaravelTsAnnotations\Commands;
+namespace BrunosCode\LaravelTsAnnotations\Commands;
 
-use Brunoscode\LaravelTsAnnotations\Parser\AttributeParser;
-use Brunoscode\LaravelTsAnnotations\Scanner\PhpFileScanner;
-use Brunoscode\LaravelTsAnnotations\Writer\TypeScriptFileWriter;
+use BrunosCode\LaravelTsAnnotations\Parser\AttributeParser;
+use BrunosCode\LaravelTsAnnotations\Scanner\PhpFileScanner;
+use BrunosCode\LaravelTsAnnotations\Writer\TypeScriptFileWriter;
 use Illuminate\Console\Command;
 
 class GenerateTypesCommand extends Command

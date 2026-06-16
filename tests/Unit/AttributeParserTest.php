@@ -1,12 +1,12 @@
 <?php
 
-namespace Brunoscode\LaravelTsAnnotations\Tests\Unit;
+namespace BrunosCode\LaravelTsAnnotations\Tests\Unit;
 
-use Brunoscode\LaravelTsAnnotations\Parser\AttributeParser;
-use Brunoscode\LaravelTsAnnotations\Tests\Fixtures\UserController;
-use Brunoscode\LaravelTsAnnotations\Tests\Fixtures\UserResource;
-use Brunoscode\LaravelTsAnnotations\Tests\Fixtures\VisibilityController;
-use Brunoscode\LaravelTsAnnotations\Tests\TestCase;
+use BrunosCode\LaravelTsAnnotations\Parser\AttributeParser;
+use BrunosCode\LaravelTsAnnotations\Tests\Fixtures\UserController;
+use BrunosCode\LaravelTsAnnotations\Tests\Fixtures\UserResource;
+use BrunosCode\LaravelTsAnnotations\Tests\Fixtures\VisibilityController;
+use BrunosCode\LaravelTsAnnotations\Tests\TestCase;
 
 class AttributeParserTest extends TestCase
 {

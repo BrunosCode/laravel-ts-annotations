@@ -1,6 +1,6 @@
 <?php
 
-namespace Brunoscode\LaravelTsAnnotations\Attributes;
+namespace BrunosCode\LaravelTsAnnotations\Attributes;
 
 /**
  * Generate a TypeScript type alias automatically from a PHP class.

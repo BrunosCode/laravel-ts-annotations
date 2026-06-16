@@ -1,11 +1,11 @@
 <?php
 
-namespace Brunoscode\LaravelTsAnnotations;
+namespace BrunosCode\LaravelTsAnnotations;
 
-use Brunoscode\LaravelTsAnnotations\Commands\GenerateTypesCommand;
-use Brunoscode\LaravelTsAnnotations\Parser\AttributeParser;
-use Brunoscode\LaravelTsAnnotations\Scanner\PhpFileScanner;
-use Brunoscode\LaravelTsAnnotations\Writer\TypeScriptFileWriter;
+use BrunosCode\LaravelTsAnnotations\Commands\GenerateTypesCommand;
+use BrunosCode\LaravelTsAnnotations\Parser\AttributeParser;
+use BrunosCode\LaravelTsAnnotations\Scanner\PhpFileScanner;
+use BrunosCode\LaravelTsAnnotations\Writer\TypeScriptFileWriter;
 use Illuminate\Support\ServiceProvider;
 
 class TsAnnotationsServiceProvider extends ServiceProvider

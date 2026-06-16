@@ -1,9 +1,9 @@
 <?php
 
-namespace Brunoscode\LaravelTsAnnotations\Tests\Unit;
+namespace BrunosCode\LaravelTsAnnotations\Tests\Unit;
 
-use Brunoscode\LaravelTsAnnotations\Parser\PhpToTsTypeMapper;
-use Brunoscode\LaravelTsAnnotations\Tests\TestCase;
+use BrunosCode\LaravelTsAnnotations\Parser\PhpToTsTypeMapper;
+use BrunosCode\LaravelTsAnnotations\Tests\TestCase;
 use ReflectionClass;
 use ReflectionType;
 

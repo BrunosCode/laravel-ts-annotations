@@ -1,13 +1,13 @@
 <?php
 
-namespace Brunoscode\LaravelTsAnnotations\Tests\Unit;
+namespace BrunosCode\LaravelTsAnnotations\Tests\Unit;
 
-use Brunoscode\LaravelTsAnnotations\Parser\AttributeParser;
-use Brunoscode\LaravelTsAnnotations\Tests\Fixtures\AdminStatusEnum;
-use Brunoscode\LaravelTsAnnotations\Tests\Fixtures\DirectionEnum;
-use Brunoscode\LaravelTsAnnotations\Tests\Fixtures\PriorityEnum;
-use Brunoscode\LaravelTsAnnotations\Tests\Fixtures\StatusEnum;
-use Brunoscode\LaravelTsAnnotations\Tests\TestCase;
+use BrunosCode\LaravelTsAnnotations\Parser\AttributeParser;
+use BrunosCode\LaravelTsAnnotations\Tests\Fixtures\AdminStatusEnum;
+use BrunosCode\LaravelTsAnnotations\Tests\Fixtures\DirectionEnum;
+use BrunosCode\LaravelTsAnnotations\Tests\Fixtures\PriorityEnum;
+use BrunosCode\LaravelTsAnnotations\Tests\Fixtures\StatusEnum;
+use BrunosCode\LaravelTsAnnotations\Tests\TestCase;
 
 class EnumParserTest extends TestCase
 {
@@ -121,7 +121,7 @@ class EnumParserTest extends TestCase
     public function test_tsEnum_not_applied_to_non_enum_classes(): void
     {
         // UserResource is a plain class — TSEnum should have no effect
-        $result = $this->parser->parse([\Brunoscode\LaravelTsAnnotations\Tests\Fixtures\UserResource::class]);
+        $result = $this->parser->parse([\BrunosCode\LaravelTsAnnotations\Tests\Fixtures\UserResource::class]);
 
         // Only #[TS] entries should be present, not any auto-generated enum body
         foreach ($result['default'] ?? [] as $entry) {

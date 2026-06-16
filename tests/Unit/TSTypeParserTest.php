@@ -1,13 +1,13 @@
 <?php
 
-namespace Brunoscode\LaravelTsAnnotations\Tests\Unit;
+namespace BrunosCode\LaravelTsAnnotations\Tests\Unit;
 
-use Brunoscode\LaravelTsAnnotations\Attributes\TSType;
-use Brunoscode\LaravelTsAnnotations\Parser\AttributeParser;
-use Brunoscode\LaravelTsAnnotations\Tests\Fixtures\ProductData;
-use Brunoscode\LaravelTsAnnotations\Tests\Fixtures\UserData;
-use Brunoscode\LaravelTsAnnotations\Tests\Fixtures\UserDataChild;
-use Brunoscode\LaravelTsAnnotations\Tests\TestCase;
+use BrunosCode\LaravelTsAnnotations\Attributes\TSType;
+use BrunosCode\LaravelTsAnnotations\Parser\AttributeParser;
+use BrunosCode\LaravelTsAnnotations\Tests\Fixtures\ProductData;
+use BrunosCode\LaravelTsAnnotations\Tests\Fixtures\UserData;
+use BrunosCode\LaravelTsAnnotations\Tests\Fixtures\UserDataChild;
+use BrunosCode\LaravelTsAnnotations\Tests\TestCase;
 
 class TSTypeParserTest extends TestCase
 {

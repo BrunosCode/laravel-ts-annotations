@@ -1,6 +1,6 @@
 <?php
 
-namespace Brunoscode\LaravelTsAnnotations\Scanner;
+namespace BrunosCode\LaravelTsAnnotations\Scanner;
 
 /**
  * Recursively scans directories for PHP files and extracts the fully

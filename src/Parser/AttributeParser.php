@@ -1,10 +1,10 @@
 <?php
 
-namespace Brunoscode\LaravelTsAnnotations\Parser;
+namespace BrunosCode\LaravelTsAnnotations\Parser;
 
-use Brunoscode\LaravelTsAnnotations\Attributes\TS;
-use Brunoscode\LaravelTsAnnotations\Attributes\TSEnum;
-use Brunoscode\LaravelTsAnnotations\Attributes\TSType;
+use BrunosCode\LaravelTsAnnotations\Attributes\TS;
+use BrunosCode\LaravelTsAnnotations\Attributes\TSEnum;
+use BrunosCode\LaravelTsAnnotations\Attributes\TSType;
 use ReflectionClass;
 use ReflectionEnum;
 use ReflectionEnumBackedCase;

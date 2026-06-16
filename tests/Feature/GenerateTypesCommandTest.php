@@ -1,8 +1,8 @@
 <?php
 
-namespace Brunoscode\LaravelTsAnnotations\Tests\Feature;
+namespace BrunosCode\LaravelTsAnnotations\Tests\Feature;
 
-use Brunoscode\LaravelTsAnnotations\Tests\TestCase;
+use BrunosCode\LaravelTsAnnotations\Tests\TestCase;
 
 class GenerateTypesCommandTest extends TestCase
 {
@@ -87,7 +87,7 @@ class GenerateTypesCommandTest extends TestCase
         $content = file_get_contents($this->tmpOutput);
 
         $this->assertStringContainsString(
-            '// --- Brunoscode\\LaravelTsAnnotations\\Tests\\Fixtures\\UserResource ---',
+            '// --- BrunosCode\\LaravelTsAnnotations\\Tests\\Fixtures\\UserResource ---',
             $content,
         );
     }

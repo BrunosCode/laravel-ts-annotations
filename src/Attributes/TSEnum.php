@@ -1,6 +1,6 @@
 <?php
 
-namespace Brunoscode\LaravelTsAnnotations\Attributes;
+namespace BrunosCode\LaravelTsAnnotations\Attributes;
 
 /**
  * Generate a TypeScript enum automatically from a PHP enum.

@@ -24,7 +24,7 @@ styles cover every common case:
 Usable on classes and individual methods. Repeatable.
 
 ```php
-use Brunoscode\LaravelTsAnnotations\Attributes\TS;
+use BrunosCode\LaravelTsAnnotations\Attributes\TS;
 
 // On a class (API Resource, DTO, Form Request…)
 #[TS(<<<'TS'
@@ -80,7 +80,7 @@ inherited from a parent class are skipped. Annotate the parent with `#[TSType]`
 too if you need its properties in a separate type.
 
 ```php
-use Brunoscode\LaravelTsAnnotations\Attributes\TSType;
+use BrunosCode\LaravelTsAnnotations\Attributes\TSType;
 
 #[TSType]
 class OrderData
@@ -145,7 +145,7 @@ class OrderData { ... }
 No body to write — cases and backing values are read automatically.
 
 ```php
-use Brunoscode\LaravelTsAnnotations\Attributes\TSEnum;
+use BrunosCode\LaravelTsAnnotations\Attributes\TSEnum;
 
 #[TSEnum]
 enum Status: string

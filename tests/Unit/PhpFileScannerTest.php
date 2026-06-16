@@ -1,9 +1,9 @@
 <?php
 
-namespace Brunoscode\LaravelTsAnnotations\Tests\Unit;
+namespace BrunosCode\LaravelTsAnnotations\Tests\Unit;
 
-use Brunoscode\LaravelTsAnnotations\Scanner\PhpFileScanner;
-use Brunoscode\LaravelTsAnnotations\Tests\TestCase;
+use BrunosCode\LaravelTsAnnotations\Scanner\PhpFileScanner;
+use BrunosCode\LaravelTsAnnotations\Tests\TestCase;
 
 class PhpFileScannerTest extends TestCase
 {

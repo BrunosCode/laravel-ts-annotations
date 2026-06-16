@@ -1,6 +1,6 @@
 <?php
 
-namespace Brunoscode\LaravelTsAnnotations\Writer;
+namespace BrunosCode\LaravelTsAnnotations\Writer;
 
 /**
  * Writes (or updates) a TypeScript file, inserting generated content between

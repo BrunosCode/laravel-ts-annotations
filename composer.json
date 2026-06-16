@@ -20,18 +20,18 @@
     },
     "autoload": {
         "psr-4": {
-            "Brunoscode\\LaravelTsAnnotations\\": "src/"
+            "BrunosCode\\LaravelTsAnnotations\\": "src/"
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "Brunoscode\\LaravelTsAnnotations\\Tests\\": "tests/"
+            "BrunosCode\\LaravelTsAnnotations\\Tests\\": "tests/"
         }
     },
     "extra": {
         "laravel": {
             "providers": [
-                "Brunoscode\\LaravelTsAnnotations\\TsAnnotationsServiceProvider"
+                "BrunosCode\\LaravelTsAnnotations\\TsAnnotationsServiceProvider"
             ]
         }
     },
