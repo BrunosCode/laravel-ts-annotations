@@ -75,6 +75,10 @@ TS)]
 Inspects all public non-static properties (including promoted constructor params)
 via Reflection. The `readonly` modifier is preserved in the output.
 
+Only properties **declared on the class itself** are emitted — properties
+inherited from a parent class are skipped. Annotate the parent with `#[TSType]`
+too if you need its properties in a separate type.
+
 ```php
 use Brunoscode\LaravelTsAnnotations\Attributes\TSType;
 
@@ -114,9 +118,17 @@ PHP → TypeScript type mapping:
 | `T\|U` | `T \| U` |
 | `array` | `unknown[]` |
 | `mixed` | `any` |
-| `Carbon\Carbon` | `string` |
-| `Collection` | `unknown[]` |
-| Other class | short class name |
+| `object` | `object` |
+| `void`, `never` | `void`, `never` |
+| `self`, `static` | `this` |
+| `T & U` (intersection) | `T & U` |
+| `Carbon\Carbon`, `CarbonImmutable`, `Illuminate\Support\Carbon` | `string` |
+| `Illuminate\Support\Collection`, Eloquent `Collection` | `unknown[]` |
+| Any other class | short class name |
+
+Only the exact Carbon/Collection FQCNs above are remapped. A different class
+named `Collection` (e.g. your own `App\Support\Collection`) falls through to the
+short-name rule and becomes the literal `Collection`, **not** `unknown[]`.
 
 Use the optional `name` parameter to override the TypeScript identifier:
 
@@ -199,15 +211,32 @@ php artisan vendor:publish --tag=ts-annotations-config
 // config/ts-annotations.php
 return [
     'scan' => [
-        app_path('Http'),       // classes with #[TS]
+        app_path('Http'),       // classes/methods with #[TS]
+        app_path('Enum'),       // enums with #[TSEnum]
         app_path('Data'),       // DTOs with #[TSType]
-        app_path('Enums'),      // enums with #[TSEnum]
     ],
     'outputs' => [
         'default' => [
             'path'    => resource_path('js/types/generated.ts'),
+            // Lines prepended inside the generated block on every run.
+            // The shipped default provides the Inertia resource wrappers:
             'imports' => [
-                "import type { PageProps } from '@inertiajs/core'",
+                'export type CollectionResource<T> = { data: T[] };',
+                '',
+                'export type PaginatedResource<T> = {',
+                '    data: T[];',
+                '    total: number;',
+                '    per_page: number;',
+                '    current_page: number;',
+                '    last_page: number;',
+                '    from: number | null;',
+                '    to: number | null;',
+                '    first_page_url: string;',
+                '    last_page_url: string;',
+                '    next_page_url: string | null;',
+                '    prev_page_url: string | null;',
+                '    path: string;',
+                '};',
             ],
         ],
         // 'admin' => ['path' => resource_path('js/types/admin.ts'), 'imports' => []],
@@ -231,11 +260,19 @@ run. If the file has no markers the generated block is appended at the end.
 
 ## Output order
 
-Within each output file, entries are written:
-1. Class-level `#[TS]` attributes, in file-scan order
-2. `#[TSEnum]` entries, in file-scan order
-3. `#[TSType]` entries, in file-scan order
-4. Method-level `#[TS]` attributes, sorted by line number within each class
+Entries follow **file-scan order across classes**. Within a single class they
+are emitted in this fixed order:
+
+1. Class-level `#[TS]` attributes
+2. `#[TSEnum]` (only on enums)
+3. `#[TSType]` (inferred from the class)
+4. Method-level `#[TS]` attributes, sorted by line number
+
+There is **no** global grouping by attribute type. A `#[TSEnum]` in a class
+that is scanned before a `#[TS]` resource appears first in the output. The
+result looks grouped only when your `scan` paths are themselves ordered by
+kind (e.g. `Http`, then `Enum`, then `Data`) — that grouping comes from scan
+order, not from an intrinsic sort.
 
 Each entry is preceded by a source comment:
 
@@ -258,4 +295,4 @@ export type OrderData = { ... }
 - Run `ts:generate` after adding or changing any annotation.
 - When adding a new output file, define it in config before referencing it in an attribute.
 - Use `--dry-run` to verify output before committing generated files.
-- Add scan paths for `Data/` and `Enums/` directories when using `#[TSType]` or `#[TSEnum]`.
+- Add scan paths for `Data/` and `Enum/` directories when using `#[TSType]` or `#[TSEnum]`.
